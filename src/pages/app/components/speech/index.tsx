@@ -47,6 +47,7 @@ export const SystemAudio = (props: useSystemAudioType) => {
     startNewConversation,
     conversation,
     resizeWindow,
+    runMessageAction,
     quickActions,
     addQuickAction,
     removeQuickAction,
@@ -356,6 +357,7 @@ export const SystemAudio = (props: useSystemAudioType) => {
                       conversation={conversation}
                       conversationMode={conversationMode}
                       setConversationMode={setConversationMode}
+                      runMessageAction={runMessageAction}
                     />
 
                     {/* Settings Panel */}

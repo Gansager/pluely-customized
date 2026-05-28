@@ -749,6 +749,26 @@ export function useSystemAudio() {
     });
   }, [startCapture, stopCapture]);
 
+  // Patch 10: right-click action on a message — explain / translate / draft.
+  // Bypasses the meeting-coach system prompt because these are direct asks
+  // about a single message, not in-call coaching.
+  const runMessageAction = useCallback(
+    async (content: string, action: "explain" | "translate" | "draft") => {
+      const prompts: Record<typeof action, string> = {
+        explain:
+          "Объясни это сообщение детально, на русском. Раскрой контекст, термины, что имеется в виду, какие есть нюансы. Без воды, но достаточно глубоко чтобы стало понятно.",
+        translate:
+          "Переведи это сообщение на русский. Если оно уже на русском — всё равно дай аккуратный русский вариант (перефразируй, если оригинал ломаный). Верни только перевод, без комментариев.",
+        draft:
+          "Это вопрос или запрос. Дай прямой, конкретный и профессиональный ответ по существу, на том же языке, что и оригинал. Без преамбулы и без «вот ответ:» — только сам ответ.",
+      };
+      const cleaned = content.replace(/^\[(ME|THEM)\]\s*/, "");
+      setIsPopoverOpen(true);
+      await processWithAI(cleaned, prompts[action], []);
+    },
+    [processWithAI, setIsPopoverOpen]
+  );
+
   // Patch 1: Register Ctrl+Space handler — manually trigger AI on last N
   // transcribed user messages with the active coaching prompt.
   useEffect(() => {
@@ -989,6 +1009,7 @@ export function useSystemAudio() {
     setConversation,
     // AI processing
     processWithAI,
+    runMessageAction,
     // Context management
     useSystemPrompt,
     setUseSystemPrompt: updateUseSystemPrompt,

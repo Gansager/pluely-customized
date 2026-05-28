@@ -1,7 +1,11 @@
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChatConversation } from "@/types";
 import { Markdown, Switch, CopyButton } from "@/components";
 import { BotIcon, HeadphonesIcon, Loader2, SparklesIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+type MessageAction = "explain" | "translate" | "draft";
 
 type Props = {
   lastTranscription: string;
@@ -10,6 +14,68 @@ type Props = {
   conversation: ChatConversation;
   conversationMode: boolean;
   setConversationMode: (mode: boolean) => void;
+  runMessageAction?: (content: string, action: MessageAction) => void;
+};
+
+// Patch 10: lightweight right-click menu on any message.
+// Rolled by hand because we don't have @radix-ui/react-context-menu installed
+// and the shadcn DropdownMenu is not designed to be opened at arbitrary
+// pointer coordinates.
+const ContextMenu = ({
+  x,
+  y,
+  onPick,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  onPick: (action: MessageAction) => void;
+  onClose: () => void;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    const escHandler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    document.addEventListener("keydown", escHandler);
+    return () => {
+      document.removeEventListener("mousedown", handler);
+      document.removeEventListener("keydown", escHandler);
+    };
+  }, [onClose]);
+
+  const items: { action: MessageAction; label: string }[] = [
+    { action: "explain", label: "Объясни" },
+    { action: "translate", label: "Переведи" },
+    { action: "draft", label: "Черновик ответа" },
+  ];
+
+  return createPortal(
+    <div
+      ref={ref}
+      style={{ top: y, left: x }}
+      className="fixed z-50 min-w-[160px] rounded-md border border-border bg-popover p-1 shadow-md"
+    >
+      {items.map((it) => (
+        <button
+          key={it.action}
+          onClick={() => {
+            onPick(it.action);
+            onClose();
+          }}
+          className="w-full text-left px-2 py-1.5 text-xs rounded-sm hover:bg-accent hover:text-accent-foreground"
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>,
+    document.body
+  );
 };
 
 export const ResultsSection = ({
@@ -19,6 +85,7 @@ export const ResultsSection = ({
   conversation,
   conversationMode,
   setConversationMode,
+  runMessageAction,
 }: Props) => {
   const hasResponse = lastAIResponse || isAIProcessing;
   // Patch 7: in manual mode there's no auto-AI reply, so the "latest pair"
@@ -26,12 +93,28 @@ export const ResultsSection = ({
   const recentlyShownCount = lastAIResponse ? 2 : 1;
   const hasHistory = conversation.messages.length > recentlyShownCount;
 
+  // Context-menu state — coords + which message content is the subject.
+  const [menu, setMenu] = useState<
+    { x: number; y: number; content: string } | null
+  >(null);
+
   if (!hasResponse && !lastTranscription) {
     return null;
   }
 
   const isMac = navigator.platform.toLowerCase().includes("mac");
   const modKey = isMac ? "⌘" : "Ctrl";
+
+  const openMenu = (e: React.MouseEvent, content: string) => {
+    if (!runMessageAction || !content) return;
+    e.preventDefault();
+    // Clamp to viewport so the menu doesn't render off-screen.
+    const w = 180;
+    const h = 110;
+    const x = Math.min(e.clientX, window.innerWidth - w - 4);
+    const y = Math.min(e.clientY, window.innerHeight - h - 4);
+    setMenu({ x, y, content });
+  };
 
   return (
     <div className="rounded-lg border border-border/50 bg-muted/20 p-3 space-y-3">
@@ -61,14 +144,17 @@ export const ResultsSection = ({
         <div className="space-y-2">
           {/* System Input - Just text with bold label */}
           {lastTranscription && (
-            <p className="text-[11px] text-muted-foreground">
+            <p
+              className="text-[11px] text-muted-foreground"
+              onContextMenu={(e) => openMenu(e, lastTranscription)}
+            >
               <span className="font-semibold">System:</span> {lastTranscription}
             </p>
           )}
 
           {/* AI Response */}
           {hasResponse && (
-            <div>
+            <div onContextMenu={(e) => openMenu(e, lastAIResponse)}>
               {isAIProcessing && !lastAIResponse ? (
                 <div className="flex items-center gap-2 py-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -94,7 +180,10 @@ export const ResultsSection = ({
         <div className="space-y-2">
           {/* AI Response - First (on top) */}
           {hasResponse && (
-            <div className="rounded-md bg-background/50 p-2.5">
+            <div
+              className="rounded-md bg-background/50 p-2.5"
+              onContextMenu={(e) => openMenu(e, lastAIResponse)}
+            >
               <div className="flex items-center gap-1.5 mb-1">
                 <BotIcon className="h-3 w-3 text-muted-foreground" />
                 <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">
@@ -121,7 +210,10 @@ export const ResultsSection = ({
 
           {/* System Input - Second */}
           {lastTranscription && (
-            <div className="rounded-md border-l-2 border-primary/50 bg-primary/5 p-2.5">
+            <div
+              className="rounded-md border-l-2 border-primary/50 bg-primary/5 p-2.5"
+              onContextMenu={(e) => openMenu(e, lastTranscription)}
+            >
               <div className="flex items-center gap-1.5 mb-1">
                 <HeadphonesIcon className="h-3 w-3 text-primary" />
                 <span className="text-[9px] font-medium text-primary uppercase tracking-wide">
@@ -146,11 +238,12 @@ export const ResultsSection = ({
                     <div
                       key={message.id || index}
                       className={cn(
-                        "p-2 rounded-md text-[11px]",
+                        "p-2 rounded-md text-[11px] cursor-context-menu",
                         message.role === "user"
                           ? "bg-primary/5 border-l-2 border-primary/30"
                           : "bg-background/50"
                       )}
+                      onContextMenu={(e) => openMenu(e, message.content)}
                     >
                       <span className="text-[8px] font-medium text-muted-foreground uppercase">
                         {message.role === "user" ? "System" : "AI"}
@@ -164,6 +257,15 @@ export const ResultsSection = ({
             </div>
           )}
         </div>
+      )}
+
+      {menu && runMessageAction && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          onPick={(action) => runMessageAction(menu.content, action)}
+          onClose={() => setMenu(null)}
+        />
       )}
     </div>
   );
