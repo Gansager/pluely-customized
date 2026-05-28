@@ -1,13 +1,28 @@
-import { Badge, Input, Card, Empty } from "@/components";
+import { Badge, Input, Card, Empty, Button } from "@/components";
 import { useHistory } from "@/hooks";
 import { PageLayout } from "@/layouts";
-import { MessageCircleIcon, Search } from "lucide-react";
+import { MessageCircleIcon, Search, Trash2Icon } from "lucide-react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { deleteAllConversations } from "@/lib";
 
 const Dashboard = () => {
   const conversations = useHistory();
   const navigate = useNavigate();
+
+  const handleDeleteAll = async () => {
+    if (conversations.conversations.length === 0) return;
+    const ok = window.confirm(
+      `Delete all ${conversations.conversations.length} conversations? This cannot be undone.`
+    );
+    if (!ok) return;
+    try {
+      await deleteAllConversations();
+      conversations.refreshConversations();
+    } catch (e) {
+      console.error("Failed to delete all conversations:", e);
+    }
+  };
   // Group conversations by date
   const groupedConversations = conversations.conversations.reduce(
     (acc, doc) => {
@@ -41,15 +56,27 @@ const Dashboard = () => {
           />
         ) : (
           <div className="flex flex-col gap-6 pb-8">
-            <div className="relative mb-4 w-1/3">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search conversations..."
-                className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0"
-                value={conversations.search}
-                onChange={(e) => conversations.setSearch(e.target.value)}
-              />
+            <div className="mb-4 flex items-center gap-2">
+              <div className="relative w-1/3">
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search conversations..."
+                  className="pl-9 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  value={conversations.search}
+                  onChange={(e) => conversations.setSearch(e.target.value)}
+                />
+              </div>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteAll}
+                className="gap-1.5"
+                title="Delete all conversations"
+              >
+                <Trash2Icon className="size-4" />
+                Delete all
+              </Button>
             </div>
             {sortedDates
               .filter((dateKey) =>
