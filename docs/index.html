@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pluely — Customized (Gansager fork)</title>
+<meta name="description" content="A personal Windows-only fork of Pluely with unified listening, dictaphone, right-click message actions, image support, and multi-monitor screenshot fixes." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0d12;
+    --bg-elev: #12151c;
+    --bg-card: #161a23;
+    --border: #1f2530;
+    --border-strong: #2a3140;
+    --text: #e6eaf2;
+    --text-dim: #9aa3b2;
+    --text-faint: #6b7280;
+    --accent: #7c9cff;
+    --accent-soft: #1f2a4d;
+    --green: #5fdf9a;
+    --orange: #f3a55a;
+    --red: #ef6f6f;
+    --code-bg: #0f1218;
+    --max-w: 880px;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code, pre {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.92em;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: #d4d8e3;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    overflow-x: auto;
+    line-height: 1.55;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border: 0;
+  }
+  .container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Hero */
+  header.hero {
+    padding: 5rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+    background: radial-gradient(circle at 50% 0%, rgba(124, 156, 255, 0.08), transparent 60%);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid rgba(124, 156, 255, 0.25);
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.02em;
+  }
+  h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .tagline {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    margin: 0 0 1.8rem;
+    max-width: 620px;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0b0d12;
+  }
+  .btn-primary:hover { background: #94afff; text-decoration: none; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .meta-row {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 1.6rem;
+    color: var(--text-faint);
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .meta-row .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
+  .dot.orange { background: var(--orange); }
+
+  /* Sections */
+  section { padding: 3rem 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: 0; }
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin: 0 0 1.2rem;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.8rem 0 0.6rem;
+    color: var(--text);
+  }
+  p { color: var(--text-dim); margin: 0 0 1rem; }
+  p strong, li strong { color: var(--text); font-weight: 600; }
+  ul { margin: 0 0 1rem; padding-left: 1.4rem; color: var(--text-dim); }
+  li { margin-bottom: 0.5rem; }
+  blockquote {
+    margin: 1rem 0;
+    padding: 0.8rem 1rem;
+    border-left: 3px solid var(--orange);
+    background: rgba(243, 165, 90, 0.06);
+    color: var(--text);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* Feature grid */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  .feature {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.1rem 1.2rem;
+  }
+  .feature h4 {
+    margin: 0 0 0.4rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .feature p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text-dim);
+  }
+
+  /* Shortcut table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--text-dim); font-weight: 500; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  td code { font-size: 0.86em; }
+
+  /* Steps */
+  .steps { counter-reset: step; padding-left: 0; list-style: none; }
+  .steps > li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 2.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid rgba(124, 156, 255, 0.3);
+  }
+
+  /* Footer */
+  footer {
+    padding: 2rem 0 3rem;
+    color: var(--text-faint);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+  footer a { color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <span class="badge">Personal fork · v0.1.9 + patches</span>
+    <h1>Pluely — Customized</h1>
+    <p class="tagline">
+      A Windows-only fork of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> with workflow patches for live customer and engineering calls: one-button mic + system audio, right-click message actions, screenshot vision via Claude Code, and a multi-monitor selection fix.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/Gansager/pluely-customized/releases">Download latest build</a>
+      <a class="btn btn-ghost" href="https://github.com/Gansager/pluely-customized">View on GitHub →</a>
+    </div>
+    <div class="meta-row">
+      <span class="pill"><span class="dot"></span> Windows 10 / 11 only</span>
+      <span class="pill"><span class="dot orange"></span> Personal use · not affiliated with Pluely.com</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="container">
+    <h2>What's different from upstream</h2>
+    <p>13+ patches on top of stock <code>v0.1.9</code>. Headline changes:</p>
+    <div class="features">
+      <div class="feature">
+        <h4>Unified listening button</h4>
+        <p>The headphones icon starts both system-audio capture and mic VAD in one click. <code>[ME]</code> / <code>[THEM]</code> tags get added automatically. AI never auto-fires.</p>
+      </div>
+      <div class="feature">
+        <h4>Manual AI on Ctrl+Space</h4>
+        <p>Press <code>Ctrl+Space</code> to ask Claude about the latest transcript. Wrapped with a permissive prompt so it never refuses off-topic questions.</p>
+      </div>
+      <div class="feature">
+        <h4>Independent dictaphone</h4>
+        <p>Stereo WAV of mic + system audio, fully separate from the STT pipeline. Output: <code>~/Documents/Pluely Recordings/</code>. Middle-click to open the folder.</p>
+      </div>
+      <div class="feature">
+        <h4>Right-click message actions</h4>
+        <p>On any message in the conversation popover: <strong>Explain · Translate · Answer</strong>. Each runs a focused prompt that ignores the meeting-coach system prompt.</p>
+      </div>
+      <div class="feature">
+        <h4>Screenshot with vision</h4>
+        <p>The Screenshot button is always enabled. Images are auto-injected into the AI request. With the bundled Claude Code proxy, screenshots are read by the Claude Code <code>Read</code> tool.</p>
+      </div>
+      <div class="feature">
+        <h4>Multi-monitor selection fix</h4>
+        <p>Tauri's transparent overlay used to render opaque on secondary monitors with mixed DPI. Now the captured snapshot is drawn directly as the overlay background.</p>
+      </div>
+      <div class="feature">
+        <h4>All features unlocked</h4>
+        <p>Master license switch — <code>hasActiveLicense</code> forced true, premium banners and license modals removed, <code>supportsImages</code> clamped so the Screenshot icon never greys out.</p>
+      </div>
+      <div class="feature">
+        <h4>Exit + drag handle on panel</h4>
+        <p>Quit and window-move buttons live directly on the panel. The drag handle is always active, no Get License nag popover.</p>
+      </div>
+      <div class="feature">
+        <h4>Default to conversation view</h4>
+        <p>The System Audio popover opens in full conversation view, not single-reply mode.</p>
+      </div>
+      <div class="feature">
+        <h4>Delete all conversations</h4>
+        <p>One-click wipe button in the Chats tab — bypasses the per-conversation confirmation flow for fast resets between meetings.</p>
+      </div>
+      <div class="feature">
+        <h4>Auto-recover stuck capture</h4>
+        <p>Stale <em>"Capture already running"</em> errors self-heal after ~250 ms (Rust-side <code>start_system_audio_capture</code> takes and aborts the existing task instead of refusing).</p>
+      </div>
+      <div class="feature">
+        <h4>Auto-updater off</h4>
+        <p>Stock updater would overwrite the fork's patches. Updater plugin is removed from the bundle.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Install (pre-built binary)</h2>
+    <p>If you only want to use the fork, not modify it:</p>
+    <ol class="steps">
+      <li>Download the latest <code>pluely_*.msi</code> or <code>pluely_*-setup.exe</code> from the <a href="https://github.com/Gansager/pluely-customized/releases">Releases tab</a> (or build from source, see below).</li>
+      <li>Run the installer.</li>
+      <li>Open <strong>Settings → Dashboard</strong> and configure an AI provider:
+        <ul>
+          <li>Direct Anthropic API — recommended for native vision (screenshots).</li>
+          <li>Local Ollama — text-only unless a vision model (<code>llava</code> / <code>llama3.2-vision</code>) is loaded.</li>
+          <li>The bundled <code>pluely-proxy</code> setup — local Claude Code CLI, supports screenshots via the <code>Read</code> tool.</li>
+        </ul>
+      </li>
+      <li>Configure an STT provider — local Whisper via the proxy is the fastest path.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Build from source</h2>
+
+    <h3>Prerequisites</h3>
+    <ul>
+      <li><strong>Windows 10 or 11.</strong> macOS / Linux are <strong>not</strong> supported in this fork — recorder, capture, launcher scripts, and proxy hooks are all Windows-specific.</li>
+      <li><strong>Rust</strong> (stable MSVC toolchain) via <a href="https://rustup.rs/">rustup-init.exe</a>. Pick <em>default host triple x86_64-pc-windows-msvc</em>, <em>default toolchain stable</em>, <em>profile minimal</em>. Make sure <code>~/.cargo/bin</code> is on <code>PATH</code>.</li>
+      <li><strong>Visual Studio Build Tools 2022</strong> with the <em>Desktop development with C++</em> workload and the Windows 11 SDK (22621 or newer):
+        <pre><code>winget install Microsoft.VisualStudio.2022.BuildTools `
+  --override "--passive --add Microsoft.VisualStudio.Workload.VCTools `
+              --add Microsoft.VisualStudio.Component.Windows11SDK.22621"</code></pre>
+      </li>
+      <li><strong>Node.js 20+</strong> and <code>npm</code>.</li>
+    </ul>
+
+    <h3>Build</h3>
+<pre><code>git clone https://github.com/Gansager/pluely-customized.git
+cd pluely-customized
+npm install
+npm run tauri build</code></pre>
+    <p>First clean build takes ~10 minutes (~500 Rust crates + vite frontend + bundler). Incremental Rust-only builds finish in ~2 minutes.</p>
+
+    <p>Outputs:</p>
+    <ul>
+      <li><code>src-tauri/target/release/pluely.exe</code> — the binary</li>
+      <li><code>src-tauri/target/release/bundle/msi/*.msi</code> — Windows installer</li>
+      <li><code>src-tauri/target/release/bundle/nsis/*-setup.exe</code> — NSIS installer</li>
+    </ul>
+
+    <h3>Install the freshly-built binary in place</h3>
+    <p>If you already have stock Pluely installed and just want to swap the executable:</p>
+<pre><code>Stop-Process -Name pluely -Force -ErrorAction SilentlyContinue
+Copy-Item "src-tauri\target\release\pluely.exe" "$env:LOCALAPPDATA\Pluely\pluely.exe" -Force
+Start-Process "$env:LOCALAPPDATA\Pluely\pluely.exe"</code></pre>
+    <blockquote>The first time, install via the <code>.msi</code> / <code>.exe</code> so <code>%LOCALAPPDATA%\Pluely\</code>, registry entries, and the Start menu shortcut all get set up.</blockquote>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Optional: local Claude Code proxy</h2>
+    <p>If you want to route Pluely through a local Claude Code CLI (no Anthropic API credits) <strong>and</strong> want screenshot support via Claude Code's <code>Read</code> tool, set up the companion proxy:</p>
+    <ol class="steps">
+      <li>Install <code>@anthropic-ai/claude-code</code> globally and authenticate it once interactively:
+<pre><code>npm install -g @anthropic-ai/claude-code
+claude  # one-time login</code></pre>
+      </li>
+      <li>Place the proxy scripts somewhere local (e.g. <code>~/pluely-proxy/</code>). The proxy code is <strong>not</strong> in this repo — it's a private personal setup. The key file is <code>proxy.py</code> (HTTP server forwarding OpenAI-format requests to <code>claude -p</code>, with image-to-temp-file extraction).</li>
+      <li>Configure a custom AI provider in Pluely Settings pointed at <code>http://127.0.0.1:8765/v1/chat/completions</code>.</li>
+    </ol>
+
+    <p>Local STT (faster than cloud) uses Whisper:</p>
+<pre><code>pip install -U whisper-cpp-python  # or your preferred whisper.cpp binding
+python whisper-server.py           # runs on http://127.0.0.1:8766</code></pre>
+    <p>Then configure a custom STT provider in Pluely Settings pointed at the whisper-server.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Keyboard shortcuts</h2>
+    <table>
+      <thead>
+        <tr><th>Action</th><th>Shortcut</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Manually trigger AI on the latest transcript</td><td><code>Ctrl+Space</code></td></tr>
+        <tr><td>Toggle conversation mode in System Audio popover</td><td><code>Ctrl+K</code></td></tr>
+        <tr><td>Toggle window visibility</td><td>per-machine, set in <em>Settings → Shortcuts</em></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li><strong>System audio "Capture already running" error.</strong> The fork's auto-recovery should self-heal after ~250 ms. If it doesn't, restart Pluely.</li>
+      <li><strong>Ctrl+Shift+A doesn't work.</strong> Some other app holds that hotkey on your machine. Change the <em>Audio recording</em> shortcut in <em>Settings → Shortcuts</em>.</li>
+      <li><strong>Selection mode shows white screens.</strong> Already fixed in this fork — Selection mode uses the captured snapshot as the overlay background. If you still see this, you're on an older build.</li>
+      <li><strong>Pluely doesn't respond to system audio.</strong> Check Windows has the right speaker / system audio device selected and audio is actually playing. WASAPI loopback returns silence when nothing is playing.</li>
+      <li><strong>Reverting to stock Pluely.</strong> Copy any official <code>pluely.exe</code> v0.1.9 release over <code>%LOCALAPPDATA%\Pluely\pluely.exe</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    Built on top of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> · Licensed GPL v3 · <a href="https://github.com/Gansager/pluely-customized">Source on GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
