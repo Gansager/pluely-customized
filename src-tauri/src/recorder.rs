@@ -132,6 +132,31 @@ pub async fn stop_call_recording(app: AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn summarize_meeting() -> Result<(), String> {
+    // Launches ~/pluely-proxy/end-meeting.cmd — same target as the
+    // "Закончить митинг" desktop shortcut. The .cmd opens its own console
+    // window for progress, then closes after a timeout.
+    #[cfg(target_os = "windows")]
+    {
+        let userprofile =
+            std::env::var("USERPROFILE").map_err(|e| format!("USERPROFILE not set: {}", e))?;
+        let cmd_path = format!("{}\\pluely-proxy\\end-meeting.cmd", userprofile);
+        if !std::path::Path::new(&cmd_path).exists() {
+            return Err(format!("end-meeting.cmd not found at {}", cmd_path));
+        }
+        std::process::Command::new("cmd")
+            .args(["/c", "start", "", &cmd_path])
+            .spawn()
+            .map_err(|e| format!("Failed to spawn end-meeting.cmd: {}", e))?;
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        return Err("summarize_meeting is only wired up for Windows".into());
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub fn open_recordings_folder(app: AppHandle) -> Result<(), String> {
     let documents = app
         .path()

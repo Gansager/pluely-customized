@@ -8,7 +8,7 @@ import {
 } from "./components";
 import { useApp } from "@/hooks";
 import { useApp as useAppContext } from "@/contexts";
-import { SparklesIcon } from "lucide-react";
+import { LogOutIcon, SparklesIcon } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { ErrorBoundary } from "react-error-boundary";
 import { ErrorLayout } from "@/layouts";
@@ -24,6 +24,14 @@ const App = () => {
       await invoke("open_dashboard");
     } catch (error) {
       console.error("Failed to open dashboard:", error);
+    }
+  };
+
+  const quitApp = async () => {
+    try {
+      await invoke("exit_app");
+    } catch (error) {
+      console.error("Failed to quit:", error);
     }
   };
 
@@ -80,6 +88,14 @@ const App = () => {
             </Button>
           </div>
 
+          <Button
+            size={"icon"}
+            className="cursor-pointer"
+            title="Quit Pluely"
+            onClick={quitApp}
+          >
+            <LogOutIcon className="h-4 w-4" />
+          </Button>
           <DragButton />
         </Card>
         {customizable.cursor.type === "invisible" && platform !== "linux" ? (

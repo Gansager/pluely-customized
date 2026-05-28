@@ -123,6 +123,7 @@ pub fn run() {
             recorder::stop_call_recording,
             recorder::get_recording_status,
             recorder::open_recordings_folder,
+            recorder::summarize_meeting,
         ])
         .setup(|app| {
             // Setup main window positioning
