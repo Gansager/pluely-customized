@@ -52,17 +52,24 @@ pub async fn start_system_audio_capture(
 ) -> Result<(), String> {
     let state = app.state::<crate::AudioState>();
 
-    // Check if already capturing (atomic check)
+    // Patch 6: auto-recover from stale capture state — if a previous task is
+    // still registered, abort it and proceed rather than refusing to start.
     {
-        let guard = state
+        let mut guard = state
             .stream_task
             .lock()
             .map_err(|e| format!("Failed to acquire lock: {}", e))?;
 
-        if guard.is_some() {
-            warn!("Capture already running");
-            return Err("Capture already running".to_string());
+        if let Some(existing) = guard.take() {
+            warn!("Previous capture task found at start — aborting and restarting");
+            existing.abort();
         }
+    }
+    // Give Windows audio subsystem a beat to release the device after abort
+    tokio::time::sleep(tokio::time::Duration::from_millis(250)).await;
+    // Also clear is_capturing flag in case the prior task didn't get to cleanup
+    if let Ok(mut cap) = state.is_capturing.lock() {
+        *cap = false;
     }
 
     // Update VAD config if provided

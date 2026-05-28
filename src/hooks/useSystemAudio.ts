@@ -98,6 +98,14 @@ export function useSystemAudio() {
   const [useSystemPrompt, setUseSystemPrompt] = useState<boolean>(true);
   const [contextContent, setContextContent] = useState<string>("");
 
+  // Patch 1: Manual AI mode — when true, transcriptions are persisted as user
+  // messages but AI is NOT auto-invoked. User triggers AI via Ctrl+Space.
+  const [manualAiMode, setManualAiMode] = useState<boolean>(true);
+  const manualAiModeRef = useRef<boolean>(true);
+  useEffect(() => {
+    manualAiModeRef.current = manualAiMode;
+  }, [manualAiMode]);
+
   const {
     selectedSttProvider,
     allSttProviders,
@@ -134,6 +142,16 @@ export function useSystemAudio() {
         setVadConfig(parsed);
       } catch (error) {
         console.error("Failed to load VAD config:", error);
+      }
+    }
+
+    // Patch 1: Load manual AI mode toggle (default true)
+    const savedManual = safeLocalStorage.getItem(STORAGE_KEYS.MANUAL_AI_MODE);
+    if (savedManual !== null) {
+      try {
+        setManualAiMode(JSON.parse(savedManual) === true);
+      } catch {
+        setManualAiMode(true);
       }
     }
   }, []);
@@ -267,12 +285,14 @@ export function useSystemAudio() {
             });
 
             try {
-              const transcription = await Promise.race([
+              const rawTranscription = await Promise.race([
                 sttPromise,
                 timeoutPromise,
               ]);
 
-              if (transcription.trim()) {
+              if (rawTranscription.trim()) {
+                // Patch 2: tag system audio source
+                const transcription = `[THEM] ${rawTranscription}`;
                 setLastTranscription(transcription);
                 setError("");
 
@@ -284,11 +304,32 @@ export function useSystemAudio() {
                   return { role: msg.role, content: msg.content };
                 });
 
-                await processWithAI(
-                  transcription,
-                  effectiveSystemPrompt,
-                  previousMessages
-                );
+                // Patch 1: Manual AI mode — persist transcription as user message
+                // but skip auto AI. User triggers AI via Ctrl+Space.
+                if (manualAiModeRef.current) {
+                  const timestamp = Date.now();
+                  setConversation((prev) => ({
+                    ...prev,
+                    messages: [
+                      {
+                        id: generateMessageId("user", timestamp),
+                        role: "user" as const,
+                        content: transcription,
+                        timestamp,
+                      },
+                      ...prev.messages,
+                    ],
+                    updatedAt: timestamp,
+                    title:
+                      prev.title || generateConversationTitle(transcription),
+                  }));
+                } else {
+                  await processWithAI(
+                    transcription,
+                    effectiveSystemPrompt,
+                    previousMessages
+                  );
+                }
               } else {
                 setError("Received empty transcription");
               }
@@ -707,6 +748,58 @@ export function useSystemAudio() {
       }
     });
   }, [startCapture, stopCapture]);
+
+  // Patch 1: Register Ctrl+Space handler — manually trigger AI on last N
+  // transcribed user messages with the active coaching prompt.
+  useEffect(() => {
+    const MANUAL_TRIGGER_HISTORY = 4; // how many recent messages to include as context
+    const callback = async () => {
+      try {
+        if (!conversation.messages.length) {
+          setError("Нет сообщений для AI. Сначала захвати реплику.");
+          setIsPopoverOpen(true);
+          return;
+        }
+        // Find the most recent user message to use as the trigger
+        const ordered = [...conversation.messages].sort(
+          (a, b) => a.timestamp - b.timestamp
+        );
+        const lastUser = [...ordered]
+          .reverse()
+          .find((m) => m.role === "user");
+        if (!lastUser) {
+          setError("Нет реплики собеседника в истории.");
+          setIsPopoverOpen(true);
+          return;
+        }
+        const effectiveSystemPrompt = useSystemPrompt
+          ? systemPrompt || DEFAULT_SYSTEM_PROMPT
+          : contextContent || DEFAULT_SYSTEM_PROMPT;
+        // Use up to MANUAL_TRIGGER_HISTORY recent messages as history (excluding the last user message which becomes the prompt)
+        const allButLast = ordered.slice(0, -1);
+        const history = allButLast
+          .slice(-MANUAL_TRIGGER_HISTORY)
+          .map((m) => ({ role: m.role, content: m.content }));
+        setIsPopoverOpen(true);
+        await processWithAI(lastUser.content, effectiveSystemPrompt, history);
+      } catch (err) {
+        console.error("Manual AI trigger failed:", err);
+        setError("Manual AI trigger failed");
+      }
+    };
+    globalShortcuts.registerCustomShortcutCallback(
+      "manual_ai_trigger",
+      callback
+    );
+    return () => {
+      globalShortcuts.unregisterCustomShortcutCallback("manual_ai_trigger");
+    };
+  }, [
+    conversation.messages,
+    useSystemPrompt,
+    systemPrompt,
+    contextContent,
+  ]);
 
   useEffect(() => {
     return () => {

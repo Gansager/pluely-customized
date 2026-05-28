@@ -84,6 +84,14 @@ export const MessageHistory = ({
         <ScrollArea className="h-[calc(100vh-10rem)]">
           <div className="p-4 space-y-4">
             {conversationHistory
+              // Patch 3: hide empty/dash-only assistant messages from manual-mode "silent" replies
+              .filter(
+                (m) =>
+                  !(
+                    m.role === "assistant" &&
+                    /^[\s—\-\.…]*$/.test(m.content || "")
+                  )
+              )
               .sort((a, b) => b?.timestamp - a?.timestamp)
               .map((message) => (
                 <div

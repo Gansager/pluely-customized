@@ -3,6 +3,7 @@ mod activate;
 mod api;
 mod capture;
 mod db;
+mod recorder;
 mod shortcuts;
 mod window;
 use std::sync::{Arc, Mutex};
@@ -11,6 +12,7 @@ use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
 use tokio::task::JoinHandle;
 mod speaker;
 use capture::CaptureState;
+use recorder::RecorderState;
 use speaker::VadConfig;
 
 #[cfg(target_os = "macos")]
@@ -41,6 +43,7 @@ pub fn run() {
         )
         .manage(AudioState::default())
         .manage(CaptureState::default())
+        .manage(RecorderState::default())
         .manage(shortcuts::WindowVisibility {
             is_hidden: Mutex::new(false),
         })
@@ -48,7 +51,8 @@ pub fn run() {
         .manage(shortcuts::LicenseState::default())
         .manage(shortcuts::MoveWindowState::default())
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_updater::Builder::new().build())
+        // updater disabled in custom build — see Patch 5
+        // .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_keychain::init())
         .plugin(tauri_plugin_shell::init()) // Add shell plugin
@@ -115,6 +119,10 @@ pub fn run() {
             speaker::get_audio_sample_rate,
             speaker::get_input_devices,
             speaker::get_output_devices,
+            recorder::start_call_recording,
+            recorder::stop_call_recording,
+            recorder::get_recording_status,
+            recorder::open_recordings_folder,
         ])
         .setup(|app| {
             // Setup main window positioning

@@ -76,7 +76,8 @@ const AutoSpeechVADInternal = ({
         });
 
         if (transcription) {
-          submit(transcription);
+          // Patch 2: tag mic source
+          submit(`[ME] ${transcription}`);
         }
       } catch (error) {
         console.error("Failed to transcribe audio:", error);

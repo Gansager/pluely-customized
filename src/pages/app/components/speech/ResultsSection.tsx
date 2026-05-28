@@ -21,7 +21,10 @@ export const ResultsSection = ({
   setConversationMode,
 }: Props) => {
   const hasResponse = lastAIResponse || isAIProcessing;
-  const hasHistory = conversation.messages.length > 2;
+  // Patch 7: in manual mode there's no auto-AI reply, so the "latest pair"
+  // shown above is just 1 message (the user transcription) not 2.
+  const recentlyShownCount = lastAIResponse ? 2 : 1;
+  const hasHistory = conversation.messages.length > recentlyShownCount;
 
   if (!hasResponse && !lastTranscription) {
     return null;
@@ -137,7 +140,7 @@ export const ResultsSection = ({
               </p>
               <div className="space-y-1.5 max-h-40 overflow-y-auto">
                 {conversation.messages
-                  .slice(2)
+                  .slice(recentlyShownCount)
                   .sort((a, b) => b.timestamp - a.timestamp)
                   .map((message, index) => (
                     <div

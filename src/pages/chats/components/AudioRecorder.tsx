@@ -160,7 +160,8 @@ export const AudioRecorder = ({
         audio: audioBlob,
       });
 
-      onTranscriptionComplete(text);
+      // Patch 2: tag mic source
+      onTranscriptionComplete(text ? `[ME] ${text}` : text);
     } catch (error) {
       console.error("Transcription failed:", error);
       onCancel();

@@ -71,4 +71,15 @@ export const DEFAULT_SHORTCUT_ACTIONS: ShortcutAction[] = [
       linux: "ctrl+shift+s",
     },
   },
+  {
+    id: "manual_ai_trigger",
+    name: "Ask AI now",
+    description:
+      "Trigger AI on the latest transcribed message (used with Manual AI mode)",
+    defaultKey: {
+      macos: "cmd+space",
+      windows: "ctrl+space",
+      linux: "ctrl+space",
+    },
+  },
 ];

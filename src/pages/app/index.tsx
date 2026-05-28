@@ -1,9 +1,10 @@
-import { Card, Updater, DragButton, CustomCursor, Button } from "@/components";
+import { Card, DragButton, CustomCursor, Button } from "@/components";
 import {
   SystemAudio,
   Completion,
   AudioVisualizer,
   StatusIndicator,
+  CallRecorderButton,
 } from "./components";
 import { useApp } from "@/hooks";
 import { useApp as useAppContext } from "@/contexts";
@@ -43,6 +44,7 @@ const App = () => {
       >
         <Card className="w-full flex flex-row items-center gap-2 p-2">
           <SystemAudio {...systemAudio} />
+          <CallRecorderButton />
           {systemAudio?.capturing ? (
             <div className="flex flex-row items-center gap-2 justify-between w-full">
               <div className="flex flex-1 items-center gap-2">
@@ -78,7 +80,6 @@ const App = () => {
             </Button>
           </div>
 
-          <Updater />
           <DragButton />
         </Card>
         {customizable.cursor.type === "invisible" && platform !== "linux" ? (

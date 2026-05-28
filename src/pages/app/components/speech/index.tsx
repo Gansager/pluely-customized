@@ -67,8 +67,9 @@ export const SystemAudio = (props: useSystemAudioType) => {
 
   const { hasActiveLicense, supportsImages } = useApp();
 
-  // View mode toggle
-  const [conversationMode, setConversationMode] = useState(false);
+  // View mode toggle — default to full conversation view (Patch 7) so users
+  // see all transcriptions accumulate in auto-detect mode, not just the last one.
+  const [conversationMode, setConversationMode] = useState(true);
 
   // Screenshot state
   const [screenshotImage, setScreenshotImage] = useState<string | null>(null);
