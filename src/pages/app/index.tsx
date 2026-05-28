@@ -5,6 +5,7 @@ import {
   AudioVisualizer,
   StatusIndicator,
   CallRecorderButton,
+  MicCapture,
 } from "./components";
 import { useApp } from "@/hooks";
 import { useApp as useAppContext } from "@/contexts";
@@ -51,6 +52,10 @@ const App = () => {
         }`}
       >
         <Card className="w-full flex flex-row items-center gap-2 p-2">
+          <MicCapture
+            enabled={!!systemAudio?.capturing}
+            onTranscription={systemAudio.submitMicTranscription}
+          />
           <SystemAudio {...systemAudio} />
           <CallRecorderButton />
           {systemAudio?.capturing ? (

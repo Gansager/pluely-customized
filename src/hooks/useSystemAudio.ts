@@ -756,17 +756,47 @@ export function useSystemAudio() {
     async (content: string, action: "explain" | "translate" | "draft") => {
       const prompts: Record<typeof action, string> = {
         explain:
-          "Объясни это сообщение детально, на русском. Раскрой контекст, термины, что имеется в виду, какие есть нюансы. Без воды, но достаточно глубоко чтобы стало понятно.",
+          "Explain this message in detail, in Russian. Cover the context, terminology, what's meant, and any nuances. No fluff, but deep enough to be clear.",
         translate:
-          "Переведи это сообщение на русский. Если оно уже на русском — всё равно дай аккуратный русский вариант (перефразируй, если оригинал ломаный). Верни только перевод, без комментариев.",
+          "Translate this message to Russian. If it's already in Russian, still produce a clean Russian version (rephrase if the original is rough). Return only the translation, no commentary.",
         draft:
-          "Это вопрос или запрос. Дай прямой, конкретный и профессиональный ответ по существу, на том же языке, что и оригинал. Без преамбулы и без «вот ответ:» — только сам ответ.",
+          "This is a question or request. Give a direct, concrete, professional answer on point, in the same language as the original. No preamble, no 'Here is the answer:' — only the answer itself.",
       };
       const cleaned = content.replace(/^\[(ME|THEM)\]\s*/, "");
       setIsPopoverOpen(true);
       await processWithAI(cleaned, prompts[action], []);
     },
     [processWithAI, setIsPopoverOpen]
+  );
+
+  // Patch 11: ingest a mic transcription [ME] into the same conversation as
+  // [THEM] system audio. Like THEM in manual mode, the message is just
+  // persisted — AI is NOT auto-triggered. User runs AI on demand with
+  // Ctrl+Space (which picks up the latest user message regardless of source).
+  const submitMicTranscription = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      const tagged = `[ME] ${trimmed}`;
+      const timestamp = Date.now();
+      setLastTranscription(tagged);
+      setError("");
+      setConversation((prev) => ({
+        ...prev,
+        messages: [
+          {
+            id: generateMessageId("user", timestamp),
+            role: "user" as const,
+            content: tagged,
+            timestamp,
+          },
+          ...prev.messages,
+        ],
+        updatedAt: timestamp,
+        title: prev.title || generateConversationTitle(tagged),
+      }));
+    },
+    []
   );
 
   // Patch 1: Register Ctrl+Space handler — manually trigger AI on last N
@@ -776,7 +806,7 @@ export function useSystemAudio() {
     const callback = async () => {
       try {
         if (!conversation.messages.length) {
-          setError("Нет сообщений для AI. Сначала захвати реплику.");
+          setError("No messages for AI yet. Capture some audio first.");
           setIsPopoverOpen(true);
           return;
         }
@@ -788,13 +818,18 @@ export function useSystemAudio() {
           .reverse()
           .find((m) => m.role === "user");
         if (!lastUser) {
-          setError("Нет реплики собеседника в истории.");
+          setError("No user messages in history.");
           setIsPopoverOpen(true);
           return;
         }
-        const effectiveSystemPrompt = useSystemPrompt
+        const userContext = useSystemPrompt
           ? systemPrompt || DEFAULT_SYSTEM_PROMPT
           : contextContent || DEFAULT_SYSTEM_PROMPT;
+        // Wrap the user's configured prompt with a permissive header so the
+        // assistant answers ANY question, even off-topic — without losing the
+        // user's context. Previously a narrow user prompt (e.g. "only help
+        // with project X") caused the assistant to refuse unrelated queries.
+        const effectiveSystemPrompt = `You are a helpful assistant. Answer ANY question the user asks, directly and concisely, even if it seems off-topic or unrelated to the context below. Never refuse with "I only help with X". Use the context if it's relevant, ignore it otherwise.\n\nContext:\n${userContext}`;
         // Use up to MANUAL_TRIGGER_HISTORY recent messages as history (excluding the last user message which becomes the prompt)
         const allButLast = ordered.slice(0, -1);
         const history = allButLast
@@ -1010,6 +1045,7 @@ export function useSystemAudio() {
     // AI processing
     processWithAI,
     runMessageAction,
+    submitMicTranscription,
     // Context management
     useSystemPrompt,
     setUseSystemPrompt: updateUseSystemPrompt,

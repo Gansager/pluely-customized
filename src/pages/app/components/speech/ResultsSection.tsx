@@ -50,9 +50,9 @@ const ContextMenu = ({
   }, [onClose]);
 
   const items: { action: MessageAction; label: string }[] = [
-    { action: "explain", label: "Объясни" },
-    { action: "translate", label: "Переведи" },
-    { action: "draft", label: "Черновик ответа" },
+    { action: "explain", label: "Explain" },
+    { action: "translate", label: "Translate" },
+    { action: "draft", label: "Answer" },
   ];
 
   return createPortal(
