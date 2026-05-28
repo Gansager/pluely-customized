@@ -239,11 +239,11 @@ export async function* fetchAIResponse(params: {
     if (!userMessage) {
       throw new Error("User message is required");
     }
-    if (imagesBase64.length > 0 && !provider.curl.includes("{{IMAGE}}")) {
-      throw new Error(
-        `Provider ${provider?.id ?? "unknown"} does not support image input`
-      );
-    }
+    // Patch 14: removed the hard "does not support image input" throw.
+    // Falls through to processUserMessageTemplate, which now auto-injects
+    // Anthropic-style image content blocks if the curl template has no
+    // explicit {{IMAGE}} placeholder. Lets custom proxies (e.g.
+    // claude-code-proxy) receive images without needing the curl edited.
 
     let bodyObj: any = curlJson.data
       ? JSON.parse(JSON.stringify(curlJson.data))

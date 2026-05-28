@@ -25,8 +25,18 @@ const Overlay: React.FC<OverlayProps> = ({ monitorIndex }) => {
   });
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [cursorVisible, setCursorVisible] = useState(false);
+  // Patch 15: pull the captured snapshot for THIS monitor and draw it as the
+  // overlay background. Replaces relying on Tauri's transparent windows,
+  // which fail to composite on secondary monitors with mixed DPI.
+  const [bgImage, setBgImage] = useState<string | null>(null);
 
   const selectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    invoke<string>("get_monitor_capture", { monitorIndex })
+      .then((b64) => setBgImage(`data:image/png;base64,${b64}`))
+      .catch((e) => console.error("Failed to load monitor capture:", e));
+  }, [monitorIndex]);
 
   // Handle cancellation (ESC key, cancel button)
   const handleCancel = async () => {
@@ -157,12 +167,25 @@ const Overlay: React.FC<OverlayProps> = ({ monitorIndex }) => {
 
   return (
     <>
+      {/* Layer 1: captured screenshot, fills the overlay window edge-to-edge */}
+      {bgImage && (
+        <div
+          className="fixed inset-0 w-screen h-screen pointer-events-none"
+          style={{
+            backgroundImage: `url(${bgImage})`,
+            backgroundSize: "100% 100%",
+            backgroundRepeat: "no-repeat",
+            zIndex: 0,
+          }}
+        />
+      )}
+      {/* Layer 2: dark tint + click handlers */}
       <div
         className="fixed inset-0 w-screen h-screen overflow-hidden"
         style={{
           cursor: "none",
           backgroundColor: "rgba(15, 23, 42, 0.35)",
-          backdropFilter: "blur(2px)",
+          zIndex: 1,
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

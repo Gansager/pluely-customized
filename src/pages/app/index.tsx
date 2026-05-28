@@ -7,7 +7,8 @@ import {
   CallRecorderButton,
   MicCapture,
 } from "./components";
-import { useApp } from "@/hooks";
+import { Screenshot } from "./components/completion/Screenshot";
+import { useApp, useCompletion } from "@/hooks";
 import { useApp as useAppContext } from "@/contexts";
 import { LogOutIcon, SparklesIcon } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -19,6 +20,10 @@ const App = () => {
   const { isHidden, systemAudio } = useApp();
   const { customizable } = useAppContext();
   const platform = getPlatform();
+  // Hoisted from <Completion> so the Screenshot button (rendered third
+  // from the left, just after the dictaphone) shares the same useCompletion
+  // state instance — attached screenshots, isScreenshotLoading, etc.
+  const completion = useCompletion();
 
   const openDashboard = async () => {
     try {
@@ -58,6 +63,7 @@ const App = () => {
           />
           <SystemAudio {...systemAudio} />
           <CallRecorderButton />
+          <Screenshot {...completion} />
           {systemAudio?.capturing ? (
             <div className="flex flex-row items-center gap-2 justify-between w-full">
               <div className="flex flex-1 items-center gap-2">
@@ -82,7 +88,7 @@ const App = () => {
                 : "w-full flex flex-row gap-2 items-center"
             }`}
           >
-            <Completion isHidden={isHidden} />
+            <Completion completion={completion} isHidden={isHidden} />
             <Button
               size={"icon"}
               className="cursor-pointer"

@@ -85,6 +85,7 @@ pub fn run() {
             capture::start_screen_capture,
             capture::capture_selected_area,
             capture::close_overlay_window,
+            capture::get_monitor_capture,
             shortcuts::check_shortcuts_registered,
             shortcuts::get_registered_shortcuts,
             shortcuts::update_shortcuts,

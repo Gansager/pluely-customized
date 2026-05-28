@@ -125,7 +125,40 @@ export function processUserMessageTemplate(
     return node;
   };
 
-  return imageReplacer(result);
+  const replaced = imageReplacer(result);
+
+  // Patch 14: if no {{IMAGE}} placeholder was in the template but the caller
+  // passed images, auto-inject Anthropic-style image content blocks. Handles
+  // BOTH shapes the user's custom curl can take:
+  //   1. content is already an array → append image blocks at the end
+  //   2. content is a string (e.g. "content": "{{TEXT}}") → convert it to an
+  //      array of [{type:text}, ...image blocks]
+  // Lets custom proxies that talk Anthropic (e.g. claude-code-proxy) receive
+  // screenshots without the user editing their curl template.
+  const hadImagePlaceholder = JSON.stringify(template).includes("{{IMAGE}}");
+  if (
+    !hadImagePlaceholder &&
+    imagesBase64.length > 0 &&
+    replaced &&
+    typeof replaced === "object"
+  ) {
+    const r = replaced as any;
+    const imageBlocks = imagesBase64.map((img) => ({
+      type: "image",
+      source: {
+        type: "base64",
+        media_type: "image/png",
+        data: img,
+      },
+    }));
+    if (Array.isArray(r.content)) {
+      r.content = [...r.content, ...imageBlocks];
+    } else if (typeof r.content === "string") {
+      r.content = [{ type: "text", text: r.content }, ...imageBlocks];
+    }
+  }
+
+  return replaced;
 }
 
 /**

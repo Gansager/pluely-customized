@@ -196,6 +196,33 @@ pub fn close_overlay_window(app: tauri::AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+// Patch 15: expose the per-monitor captured snapshot to the overlay window
+// as base64 PNG. Tauri's transparent windows misbehave on multi-monitor
+// setups with mixed DPI on Windows — secondary screens end up opaque
+// (white-ish) instead of showing the desktop. Solution: the overlay draws
+// the actual captured screenshot as its background, no transparency needed.
+#[tauri::command]
+pub fn get_monitor_capture(
+    app: tauri::AppHandle,
+    monitor_index: usize,
+) -> Result<String, String> {
+    let state = app.state::<CaptureState>();
+    let captured = state.captured_monitors.lock().unwrap();
+    let info = captured
+        .get(&monitor_index)
+        .ok_or_else(|| format!("No captured image for monitor {}", monitor_index))?;
+    let mut png_buffer = Vec::new();
+    PngEncoder::new(&mut png_buffer)
+        .write_image(
+            info.image.as_raw(),
+            info.image.width(),
+            info.image.height(),
+            ColorType::Rgba8.into(),
+        )
+        .map_err(|e| format!("Failed to encode monitor {} to PNG: {}", monitor_index, e))?;
+    Ok(base64::engine::general_purpose::STANDARD.encode(png_buffer))
+}
+
 #[tauri::command]
 pub async fn capture_selected_area(
     app: tauri::AppHandle,

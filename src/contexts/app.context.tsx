@@ -134,15 +134,19 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // Patch 12: master switch — force license=true so every feature is
   // unlocked. We're shipping a personal-use fork, not the paid product.
   const [hasActiveLicense, setHasActiveLicense] = useState<boolean>(true);
-  const [supportsImages, setSupportsImagesState] = useState<boolean>(() => {
-    const stored = safeLocalStorage.getItem(STORAGE_KEYS.SUPPORTS_IMAGES);
-    return stored === null ? true : stored === "true";
-  });
+  // Patch 14: force supportsImages=true so the Screenshot button is never
+  // disabled on the panel. The selected AI provider may or may not actually
+  // accept images — if not, the request will error at send time, which is a
+  // better UX than a permanently-greyed icon.
+  const [supportsImages, setSupportsImagesState] = useState<boolean>(true);
 
-  // Wrapper to sync supportsImages to localStorage
-  const setSupportsImages = (value: boolean) => {
-    setSupportsImagesState(value);
-    safeLocalStorage.setItem(STORAGE_KEYS.SUPPORTS_IMAGES, String(value));
+  // Wrapper to sync supportsImages to localStorage. Patch 14: clamp to
+  // true — provider-change handler and storage sync used to flip this to
+  // false based on whether the AI provider's curl template contains
+  // {{IMAGE}}. We override so the Screenshot icon is always usable.
+  const setSupportsImages = (_value: boolean) => {
+    setSupportsImagesState(true);
+    safeLocalStorage.setItem(STORAGE_KEYS.SUPPORTS_IMAGES, "true");
   };
 
   // Pluely API State
@@ -425,7 +429,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const handleStorageChange = (e: StorageEvent) => {
       // Sync supportsImages across windows
       if (e.key === STORAGE_KEYS.SUPPORTS_IMAGES && e.newValue !== null) {
-        setSupportsImagesState(e.newValue === "true");
+        // Patch 14: ignore the actual storage value, keep clamped to true.
+        setSupportsImagesState(true);
       }
 
       if (
