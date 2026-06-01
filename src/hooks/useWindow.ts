@@ -15,6 +15,12 @@ export const useWindowResize = () => {
     try {
       const window = getCurrentWebviewWindow();
 
+      // Patch 14 — while the screen-share picker is open the main window is
+      // grown to full-monitor by Rust; don't let the auto-resize fight it.
+      if ((globalThis as any).__pluelyScreenPicking) {
+        return;
+      }
+
       if (!expanded && isAnyPopoverOpen()) {
         return;
       }

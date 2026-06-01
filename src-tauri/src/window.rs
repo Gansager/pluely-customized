@@ -1,9 +1,66 @@
 #[cfg(target_os = "macos")]
 use tauri::LogicalPosition;
+use std::sync::Mutex;
 use tauri::{App, AppHandle, Manager, Runtime, WebviewWindow, WebviewWindowBuilder};
 
 // The offset from the top of the screen to the window
 const TOP_OFFSET: i32 = 54;
+
+// Patch 14 — saved geometry of the main window so we can restore it after the
+// getDisplayMedia screen picker (which WebView2 renders clipped to the host
+// window's bounds) is temporarily grown to fill the monitor.
+#[derive(Default)]
+pub struct SavedMainGeometry(pub Mutex<Option<(tauri::PhysicalPosition<i32>, tauri::PhysicalSize<u32>)>>);
+
+/// Grow the main window to cover its current monitor (so the in-webview screen
+/// picker is fully visible), or restore it to the geometry saved on enable.
+#[tauri::command]
+pub fn set_screen_pick_overlay(app: tauri::AppHandle, enable: bool) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or_else(|| "main window not found".to_string())?;
+    let state = app.state::<SavedMainGeometry>();
+
+    if enable {
+        let pos = window
+            .outer_position()
+            .map_err(|e| format!("outer_position: {}", e))?;
+        let size = window
+            .outer_size()
+            .map_err(|e| format!("outer_size: {}", e))?;
+        *state.0.lock().map_err(|e| format!("lock: {}", e))? = Some((pos, size));
+
+        let monitor = match window.current_monitor() {
+            Ok(Some(m)) => Some(m),
+            _ => window.primary_monitor().map_err(|e| format!("monitor: {}", e))?,
+        }
+        .ok_or_else(|| "no monitor available".to_string())?;
+
+        let mpos = monitor.position();
+        let msize = monitor.size();
+        window
+            .set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+                x: mpos.x,
+                y: mpos.y,
+            }))
+            .map_err(|e| format!("set_position: {}", e))?;
+        window
+            .set_size(tauri::Size::Physical(tauri::PhysicalSize {
+                width: msize.width,
+                height: msize.height,
+            }))
+            .map_err(|e| format!("set_size: {}", e))?;
+    } else if let Some((pos, size)) = state.0.lock().map_err(|e| format!("lock: {}", e))?.take() {
+        window
+            .set_size(tauri::Size::Physical(size))
+            .map_err(|e| format!("restore set_size: {}", e))?;
+        window
+            .set_position(tauri::Position::Physical(pos))
+            .map_err(|e| format!("restore set_position: {}", e))?;
+    }
+
+    Ok(())
+}
 
 /// Sets up the main window with custom positioning
 pub fn setup_main_window(app: &mut App) -> Result<(), Box<dyn std::error::Error>> {

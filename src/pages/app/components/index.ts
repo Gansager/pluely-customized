@@ -3,5 +3,6 @@ export * from "./speech";
 export * from "./speech/audio-visualizer";
 export * from "./speech/StatusIndicator";
 export * from "./CallRecorderButton";
+export * from "./ScreenRecorderButton";
 export * from "./SummarizeMeetingButton";
 export * from "./MicCapture";

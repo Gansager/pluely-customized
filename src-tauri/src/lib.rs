@@ -12,7 +12,7 @@ use tauri_plugin_posthog::{init as posthog_init, PostHogConfig, PostHogOptions};
 use tokio::task::JoinHandle;
 mod speaker;
 use capture::CaptureState;
-use recorder::RecorderState;
+use recorder::{RecorderState, ScreenRecorderState};
 use speaker::VadConfig;
 
 #[cfg(target_os = "macos")]
@@ -44,6 +44,8 @@ pub fn run() {
         .manage(AudioState::default())
         .manage(CaptureState::default())
         .manage(RecorderState::default())
+        .manage(ScreenRecorderState::default())
+        .manage(window::SavedMainGeometry::default())
         .manage(shortcuts::WindowVisibility {
             is_hidden: Mutex::new(false),
         })
@@ -78,6 +80,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_app_version,
             window::set_window_height,
+            window::set_screen_pick_overlay,
             window::open_dashboard,
             window::toggle_dashboard,
             window::move_window,
@@ -125,6 +128,9 @@ pub fn run() {
             recorder::get_recording_status,
             recorder::open_recordings_folder,
             recorder::summarize_meeting,
+            recorder::start_screen_recording,
+            recorder::write_screen_recording_chunk,
+            recorder::finish_screen_recording,
         ])
         .setup(|app| {
             // Setup main window positioning

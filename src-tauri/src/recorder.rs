@@ -11,12 +11,14 @@ use anyhow::Result;
 use hound::{SampleFormat, WavSpec, WavWriter};
 use serde::Serialize;
 use std::collections::VecDeque;
+use std::fs::File;
+use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
 use tokio::sync::oneshot;
 use tokio::task::JoinHandle;
 use tracing::{error, warn};
@@ -458,4 +460,202 @@ fn run_wasapi_capture(
 
     // audio_client dropped here — releases WASAPI client cleanly.
     let _ = audio_client;
+}
+
+// ---------------------------------------------------------------------------
+// Screen recording (Patch 14)
+//
+// Unlike the WAV dictaphone above, video is captured entirely in the WebView2
+// frontend via getDisplayMedia + MediaRecorder (the native Chromium picker
+// gives us the multi-monitor "which screen?" choice for free, and audio is
+// muxed by MediaRecorder itself). Rust's only job is to sink the incoming
+// .webm byte chunks to disk in the same `Pluely Recordings` folder.
+//
+// The frontend streams chunks (MediaRecorder timeslice) as raw bytes via
+// `tauri::ipc::Request` — no JSON array bloat. We hold one open BufWriter
+// between start and finish.
+// ---------------------------------------------------------------------------
+
+#[derive(Default)]
+pub struct ScreenRecorderState {
+    file: Arc<Mutex<Option<BufWriter<File>>>>,
+    path: Arc<Mutex<Option<PathBuf>>>,
+}
+
+#[tauri::command]
+pub fn start_screen_recording(app: AppHandle, timestamp: String) -> Result<String, String> {
+    let state = app.state::<ScreenRecorderState>();
+
+    let documents = app
+        .path()
+        .document_dir()
+        .map_err(|e| format!("Cannot resolve Documents folder: {}", e))?;
+    let recordings_dir = documents.join("Pluely Recordings");
+    std::fs::create_dir_all(&recordings_dir)
+        .map_err(|e| format!("Cannot create recordings dir: {}", e))?;
+
+    let safe_ts: String = timestamp
+        .chars()
+        .map(|c| if c.is_ascii_alphanumeric() || c == '-' || c == '_' { c } else { '_' })
+        .collect();
+    let output_path = recordings_dir.join(format!("{}.webm", safe_ts));
+
+    let file = File::create(&output_path)
+        .map_err(|e| format!("Cannot create screen recording file: {}", e))?;
+
+    *state
+        .file
+        .lock()
+        .map_err(|e| format!("Lock poisoned: {}", e))? = Some(BufWriter::new(file));
+    *state
+        .path
+        .lock()
+        .map_err(|e| format!("Lock poisoned: {}", e))? = Some(output_path.clone());
+
+    Ok(output_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+pub fn write_screen_recording_chunk(
+    state: State<'_, ScreenRecorderState>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<(), String> {
+    let bytes: &[u8] = match request.body() {
+        tauri::ipc::InvokeBody::Raw(data) => data,
+        _ => return Err("Expected raw byte body for screen recording chunk".into()),
+    };
+    let mut guard = state
+        .file
+        .lock()
+        .map_err(|e| format!("Lock poisoned: {}", e))?;
+    match guard.as_mut() {
+        Some(writer) => {
+            writer
+                .write_all(bytes)
+                .map_err(|e| format!("Chunk write failed: {}", e))?;
+            Ok(())
+        }
+        None => Err("No screen recording in progress".into()),
+    }
+}
+
+#[tauri::command]
+pub async fn finish_screen_recording(app: AppHandle) -> Result<String, String> {
+    // Flush + close the raw streamed file, then take its path. Drop the state
+    // guards before the (blocking) remux so we don't hold locks across await.
+    let path = {
+        let state = app.state::<ScreenRecorderState>();
+        {
+            let mut fguard = state
+                .file
+                .lock()
+                .map_err(|e| format!("Lock poisoned: {}", e))?;
+            if let Some(mut writer) = fguard.take() {
+                writer
+                    .flush()
+                    .map_err(|e| format!("Flush failed: {}", e))?;
+            }
+        }
+        let mut pguard = state
+            .path
+            .lock()
+            .map_err(|e| format!("Lock poisoned: {}", e))?;
+        pguard.take()
+    };
+    let path = path.ok_or_else(|| "No screen recording path".to_string())?;
+
+    // MediaRecorder .webm has no Cues/Duration → not seekable. Remux with
+    // ffmpeg (`-c copy`, no re-encode) to write the seek index + duration.
+    // Best-effort: if ffmpeg is missing or fails, keep the raw file.
+    let final_path = tokio::task::spawn_blocking(move || remux_seekable(path))
+        .await
+        .map_err(|e| format!("Remux task join failed: {}", e))?;
+
+    Ok(final_path.to_string_lossy().to_string())
+}
+
+/// Locate ffmpeg.exe: winget Links shim, then the versioned winget package
+/// dir, then bare "ffmpeg" off PATH as a last resort.
+fn find_ffmpeg() -> Option<PathBuf> {
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(local) = std::env::var("LOCALAPPDATA") {
+            let base = PathBuf::from(&local).join("Microsoft").join("WinGet");
+            let shim = base.join("Links").join("ffmpeg.exe");
+            if shim.exists() {
+                return Some(shim);
+            }
+            // Walk Packages\Gyan.FFmpeg*\<version>\bin\ffmpeg.exe (version varies).
+            let packages = base.join("Packages");
+            if let Ok(entries) = std::fs::read_dir(&packages) {
+                for entry in entries.flatten() {
+                    if entry
+                        .file_name()
+                        .to_string_lossy()
+                        .starts_with("Gyan.FFmpeg")
+                    {
+                        if let Ok(subs) = std::fs::read_dir(entry.path()) {
+                            for sub in subs.flatten() {
+                                let cand = sub.path().join("bin").join("ffmpeg.exe");
+                                if cand.exists() {
+                                    return Some(cand);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // PATH fallback (works if the app was launched after winget updated PATH).
+    Some(PathBuf::from("ffmpeg"))
+}
+
+/// Remux `input` in place to a seekable .webm. Returns the final path (the
+/// original path on success, or the untouched raw file if remux failed).
+fn remux_seekable(input: PathBuf) -> PathBuf {
+    let ffmpeg = match find_ffmpeg() {
+        Some(f) => f,
+        None => return input,
+    };
+    let tmp = input.with_extension("seek.webm");
+
+    let mut cmd = std::process::Command::new(&ffmpeg);
+    cmd.arg("-y")
+        .arg("-i")
+        .arg(&input)
+        .arg("-c")
+        .arg("copy")
+        .arg(&tmp);
+    #[cfg(target_os = "windows")]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW); // no console flash
+    }
+
+    match cmd.output() {
+        Ok(out) if out.status.success() && tmp.exists() => {
+            // Replace the raw file with the remuxed (seekable) one.
+            if std::fs::remove_file(&input).is_ok() && std::fs::rename(&tmp, &input).is_ok() {
+                input
+            } else {
+                // Couldn't swap names — hand back the seekable file as-is.
+                tmp
+            }
+        }
+        other => {
+            if let Ok(out) = other {
+                warn!(
+                    "ffmpeg remux failed (status {:?}): {}",
+                    out.status,
+                    String::from_utf8_lossy(&out.stderr)
+                );
+            } else {
+                warn!("ffmpeg not runnable — leaving raw (non-seekable) .webm");
+            }
+            let _ = std::fs::remove_file(&tmp);
+            input
+        }
+    }
 }

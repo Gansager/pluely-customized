@@ -5,6 +5,7 @@ import {
   AudioVisualizer,
   StatusIndicator,
   CallRecorderButton,
+  ScreenRecorderButton,
   MicCapture,
 } from "./components";
 import { Screenshot } from "./components/completion/Screenshot";
@@ -63,6 +64,7 @@ const App = () => {
           />
           <SystemAudio {...systemAudio} />
           <CallRecorderButton />
+          <ScreenRecorderButton />
           <Screenshot {...completion} />
           {systemAudio?.capturing ? (
             <div className="flex flex-row items-center gap-2 justify-between w-full">

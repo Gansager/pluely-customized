@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Pluely — Customized (Gansager fork)</title>
-<meta name="description" content="A personal Windows-only fork of Pluely with unified listening, dictaphone, right-click message actions, image support, and multi-monitor screenshot fixes." />
+<meta name="description" content="A personal Windows-only fork of Pluely with unified listening, dictaphone, screen recording with audio, right-click message actions, image support, and multi-monitor screenshot fixes." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -459,7 +459,7 @@
     <span class="badge">Personal fork · v0.1.9 + patches</span>
     <h1>Pluely — Customized</h1>
     <p class="tagline">
-      A Windows-only fork of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> with workflow patches for live customer and engineering calls: one-button mic + system audio, right-click message actions, screenshot vision via Claude Code, and a multi-monitor selection fix.
+      A Windows-only fork of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> with workflow patches for live customer and engineering calls: one-button mic + system audio, screen recording with audio, right-click message actions, screenshot vision via Claude Code, and a multi-monitor selection fix.
     </p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/Gansager/pluely-customized/releases">Download latest build</a>
@@ -555,7 +555,7 @@
 <section>
   <div class="container">
     <h2>What's different from upstream</h2>
-    <p>13+ patches on top of stock <code>v0.1.9</code>. Headline changes:</p>
+    <p>14+ patches on top of stock <code>v0.1.9</code>. Headline changes:</p>
     <div class="features">
       <div class="feature">
         <h4>Unified listening button</h4>
@@ -568,6 +568,10 @@
       <div class="feature">
         <h4>Independent dictaphone</h4>
         <p>Stereo WAV of mic + system audio, fully separate from the STT pipeline. Output: <code>~/Documents/Pluely Recordings/</code>. Middle-click to open the folder.</p>
+      </div>
+      <div class="feature">
+        <h4>Screen recording with audio</h4>
+        <p>A monitor button next to the dictaphone records the screen with <strong>system audio + mic</strong> to a <code>.webm</code>. Chromium's native picker chooses which monitor; ffmpeg remuxes on stop so the file scrubs/seeks cleanly. Same <code>~/Documents/Pluely Recordings/</code> folder.</p>
       </div>
       <div class="feature">
         <h4>Right-click message actions</h4>
