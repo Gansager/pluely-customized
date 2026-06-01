@@ -197,6 +197,31 @@
     color: var(--text-dim);
   }
 
+  /* Spotlight: the three "capture your meeting" headline features */
+  .spotlight { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .feature-hl {
+    border-color: rgba(124, 156, 255, 0.4);
+    background:
+      linear-gradient(180deg, rgba(124, 156, 255, 0.08), rgba(124, 156, 255, 0)),
+      var(--bg-card);
+    box-shadow: 0 0 0 1px rgba(124, 156, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+  .feature-hl h4 { font-size: 1.05rem; display: flex; align-items: center; gap: 0.45rem; }
+  .feature-hl p { color: var(--text); }
+  .feature-when {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(124, 156, 255, 0.25);
+    border-radius: 999px;
+    padding: 0.12em 0.6em;
+    margin-bottom: 0.55rem;
+  }
+
   /* Shortcut table */
   table {
     width: 100%;
@@ -554,6 +579,30 @@
 
 <section>
   <div class="container">
+    <h2>Capture any meeting — your way</h2>
+    <p>Three one-click tools that cover every meeting and hand you the recap. Pick the recorder that fits, then let the summarizer write it up.</p>
+    <div class="features spotlight">
+      <div class="feature feature-hl">
+        <span class="feature-when">No screen demo</span>
+        <h4>🎙️ Dictaphone</h4>
+        <p>Just a call, nothing to show? One click records <strong>mic + system audio</strong> into a stereo WAV — lightweight, independent of the STT pipeline. Middle-click opens the folder.</p>
+      </div>
+      <div class="feature feature-hl">
+        <span class="feature-when">Screen demo</span>
+        <h4>🖥️ Screen recording</h4>
+        <p>Someone's sharing, or you need to capture a demo? Record the monitor of your choice with <strong>system audio + mic</strong> into a seekable <code>.webm</code> (ffmpeg-remuxed so it scrubs cleanly).</p>
+      </div>
+      <div class="feature feature-hl">
+        <span class="feature-when">After the call</span>
+        <h4>📝 Meeting summary</h4>
+        <p>One click turns the session transcript into a structured Markdown recap — <strong>what was discussed, decisions, action items, blockers</strong> — saved and copied to your clipboard.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
     <h2>What's different from upstream</h2>
     <p>14+ patches on top of stock <code>v0.1.9</code>. Headline changes:</p>
     <div class="features">
@@ -564,14 +613,6 @@
       <div class="feature">
         <h4>Manual AI on Ctrl+Space</h4>
         <p>Press <code>Ctrl+Space</code> to ask Claude about the latest transcript. Wrapped with a permissive prompt so it never refuses off-topic questions.</p>
-      </div>
-      <div class="feature">
-        <h4>Independent dictaphone</h4>
-        <p>Stereo WAV of mic + system audio, fully separate from the STT pipeline. Output: <code>~/Documents/Pluely Recordings/</code>. Middle-click to open the folder.</p>
-      </div>
-      <div class="feature">
-        <h4>Screen recording with audio</h4>
-        <p>A monitor button next to the dictaphone records the screen with <strong>system audio + mic</strong> to a <code>.webm</code>. Chromium's native picker chooses which monitor; ffmpeg remuxes on stop so the file scrubs/seeks cleanly. Same <code>~/Documents/Pluely Recordings/</code> folder.</p>
       </div>
       <div class="feature">
         <h4>Right-click message actions</h4>
