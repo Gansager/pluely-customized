@@ -9,7 +9,7 @@ Pluely sends multipart/form-data:
 
 We return: {"text": "..."} on response_format=json (default), or plain text otherwise.
 """
-import argparse, io, os, sys, tempfile, time
+import argparse, io, os, sys, tempfile, threading, time
 from typing import Optional
 
 try:
@@ -91,6 +91,22 @@ async def transcribe(
         return PlainTextResponse(text)
     return JSONResponse({"text": text})
 
+def _watch_parent(pid):
+    """Exit this server when the parent (Pluely) process dies, however it dies."""
+    if not pid:
+        return
+    def _w():
+        try:
+            import ctypes
+            SYNCHRONIZE = 0x00100000
+            h = ctypes.windll.kernel32.OpenProcess(SYNCHRONIZE, False, int(pid))
+            if h:
+                ctypes.windll.kernel32.WaitForSingleObject(h, 0xFFFFFFFF)
+            os._exit(0)
+        except Exception:
+            pass
+    threading.Thread(target=_w, daemon=True).start()
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model",   default=DEFAULT_MODEL, help="tiny|base|small|medium|large-v3 (default: small)")
@@ -98,7 +114,9 @@ def main():
     ap.add_argument("--compute", default=DEFAULT_CT,    help="int8|int8_float16|float16|float32 (default: int8)")
     ap.add_argument("--port",    type=int, default=DEFAULT_PORT)
     ap.add_argument("--host",    default="127.0.0.1")
+    ap.add_argument("--parent-pid", type=int, default=0, help="exit when this PID (the app) dies")
     a = ap.parse_args()
+    _watch_parent(a.parent_pid)
     global MODEL, MODEL_NAME
     MODEL_NAME = a.model
     print(f"Loading faster-whisper model={a.model} device={a.device} compute={a.compute} ...", flush=True)

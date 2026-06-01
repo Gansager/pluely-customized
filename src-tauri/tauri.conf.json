@@ -43,7 +43,18 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["info.plist", "pluely.desktop"],
+    "resources": [
+      "info.plist",
+      "pluely.desktop",
+      "sidecar-servers/**/*",
+      "installer/bootstrap-local.cmd",
+      "installer/bootstrap-claude.cmd"
+    ],
+    "windows": {
+      "nsis": {
+        "installerHooks": "installer-hooks.nsh"
+      }
+    },
     "macOS": { "minimumSystemVersion": "10.13" }
   },
   "plugins": {

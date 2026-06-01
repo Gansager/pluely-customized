@@ -348,12 +348,30 @@ class Handler(BaseHTTPRequestHandler):
             "choices":[{"index":0,"message":{"role":"assistant","content":ans},"finish_reason":"stop"}],
         })
 
+def _watch_parent(pid):
+    """Exit this server when the parent (Pluely) process dies, however it dies."""
+    if not pid:
+        return
+    def _w():
+        try:
+            import ctypes
+            SYNCHRONIZE = 0x00100000
+            h = ctypes.windll.kernel32.OpenProcess(SYNCHRONIZE, False, int(pid))
+            if h:
+                ctypes.windll.kernel32.WaitForSingleObject(h, 0xFFFFFFFF)
+            os._exit(0)
+        except Exception:
+            pass
+    threading.Thread(target=_w, daemon=True).start()
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--project","-p", default=None)
     ap.add_argument("--port", type=int, default=DEFAULT_PORT)
     ap.add_argument("--model", default="haiku", help="claude model alias: haiku, sonnet, opus (default: haiku)")
+    ap.add_argument("--parent-pid", type=int, default=0, help="exit when this PID (the app) dies")
     a = ap.parse_args()
+    _watch_parent(a.parent_pid)
     if not CLAUDE_BIN:
         print("❌ claude не найден. npm install -g @anthropic-ai/claude-code"); sys.exit(1)
     print(f"✅ claude: {CLAUDE_BIN}")

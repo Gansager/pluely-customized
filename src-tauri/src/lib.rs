@@ -5,6 +5,7 @@ mod capture;
 mod db;
 mod recorder;
 mod shortcuts;
+mod sidecars;
 mod window;
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Manager, WebviewWindow};
@@ -52,6 +53,7 @@ pub fn run() {
         .manage(shortcuts::RegisteredShortcuts::default())
         .manage(shortcuts::LicenseState::default())
         .manage(shortcuts::MoveWindowState::default())
+        .manage(sidecars::SidecarState::default())
         .plugin(tauri_plugin_opener::init())
         // updater disabled in custom build — see Patch 5
         // .plugin(tauri_plugin_updater::Builder::new().build())
@@ -79,6 +81,7 @@ pub fn run() {
     let mut builder = builder
         .invoke_handler(tauri::generate_handler![
             get_app_version,
+            sidecars::get_dist_install_mode,
             window::set_window_height,
             window::set_screen_pick_overlay,
             window::open_dashboard,
@@ -143,6 +146,9 @@ pub fn run() {
                     eprintln!("Failed to pre-create dashboard window on startup: {}", e);
                 }
             }
+
+            // Spawn bundled helper servers (STT always; Claude proxy in claude mode).
+            sidecars::spawn_all(app.handle());
 
             #[cfg(desktop)]
             {
@@ -221,9 +227,16 @@ pub fn run() {
         builder = builder.plugin(tauri_plugin_macos_permissions::init());
     }
 
-    builder
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+    let app = builder
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app_handle, event| {
+        if let tauri::RunEvent::Exit = event {
+            // Tear down the bundled helper servers when the app quits.
+            sidecars::kill_all(app_handle);
+        }
+    });
 }
 
 #[cfg(target_os = "macos")]

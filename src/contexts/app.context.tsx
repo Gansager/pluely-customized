@@ -5,7 +5,7 @@ import {
   STORAGE_KEYS,
 } from "@/config";
 import { getPlatform, safeLocalStorage, trackAppStart } from "@/lib";
-import { getShortcutsConfig } from "@/lib/storage";
+import { getShortcutsConfig, ensureDefaultsSeeded } from "@/lib/storage";
 import {
   getCustomizableState,
   setCustomizableState,
@@ -342,8 +342,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         console.debug("Failed to track app start:", error);
       }
     };
-    // Load data
-    loadData();
+    // Seed install-mode-aware defaults before the first load, then load.
+    ensureDefaultsSeeded().finally(() => loadData());
     initializeApp();
   }, []);
 

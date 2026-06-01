@@ -5,7 +5,7 @@ const arg = (process.argv[2] || '').toLowerCase();
 
 // ВАЖНО: подставь сюда ТОЧНОЕ имя модели Ollama из `ollama list` на этой машине.
 // На этой машине iGPU (AMD Radeon 680M) + Ryzen 7 7735HS + 32GB RAM — берём 7B.
-const OLLAMA_MODEL = 'qwen2.5:7b-instruct';
+const OLLAMA_MODEL = 'minicpm-v';
 
 const PRESETS = {
   claude: { provider: 'custom-claude-code-proxy', variables: { api_key: 'any',    model: 'claude-code' } },

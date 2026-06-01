@@ -39,3 +39,23 @@ export const DEFAULT_QUICK_ACTIONS = [
   "Fact-check",
   "Recap",
 ];
+
+// Distribution / packaging defaults.
+// Used to self-configure a fresh install (see lib/storage/seed-defaults.ts) so
+// the bundled proxy (8765) + local STT (8766) work out of the box without the
+// external level-tools LevelDB injection step.
+// The installer (Phase 3) can override the active brain by writing the
+// localStorage key "dist_install_mode" to "ollama" or "claude".
+export type DistMode = "ollama" | "claude";
+
+export const DIST = {
+  // Default AI brain for a fresh install: "ollama" = fully local (no login / no
+  // API key), "claude" = via the local Claude-CLI proxy (needs `claude login`).
+  DEFAULT_MODE: "ollama" as DistMode,
+  // Ollama model selected when running in local mode.
+  // Vision-capable so screenshots work out of the box (also handles text).
+  OLLAMA_MODEL: "minicpm-v",
+  // Bundled service endpoints.
+  AI_PROXY_URL: "http://127.0.0.1:8765/v1/chat/completions",
+  STT_URL: "http://127.0.0.1:8766/v1/audio/transcriptions",
+};
