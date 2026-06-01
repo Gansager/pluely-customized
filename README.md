@@ -79,20 +79,16 @@ Start-Process "$env:LOCALAPPDATA\Pluely\pluely.exe"
 
 ## Optional: `pluely-proxy` setup
 
-If you want to route Pluely through a local Claude Code CLI proxy (so you don't burn Anthropic API credits) **and** want screenshot support via Claude Code's Read tool, set up the companion proxy:
+The fork ships with a companion proxy stack under [`proxy/`](./proxy/):
 
-1. Install `@anthropic-ai/claude-code` globally: `npm install -g @anthropic-ai/claude-code` and authenticate it once with `claude` interactively.
-2. Place the proxy scripts somewhere local (e.g. `~/pluely-proxy/`). The proxy code is **not** in this repo — it's a private personal setup. The key file is `proxy.py` (HTTP server forwarding OpenAI-format requests to `claude -p`). Ask the maintainer if you want a copy.
-3. Configure a custom AI provider in Pluely Settings pointed at `http://127.0.0.1:8765/v1/chat/completions`.
+- **Claude Code CLI proxy** (`proxy.py`, port 8765) — routes Pluely's AI calls through your local `claude` CLI login instead of Anthropic API credits. Adds screenshot attachment support.
+- **Google Cloud Speech-to-Text server** (`google-stt-server.py`, port 8766) — far better RU/UK/EN accuracy than local Whisper, ~1-2 s latency, free for the first 60 min/month per GCP project.
+- **Local Whisper fallback** (`whisper-server.py`, port 8766) — same endpoint, no network, no API key. Use when offline or quota-bound.
+- **Meeting summarizer** (`summarize-meeting.py`) — reads Pluely's SQLite history, isolates the current session, writes a Markdown summary via `claude -p`, copies it to clipboard.
+- **LevelDB setup tools** (`level-tools/*.mjs`) — write Pluely's provider config directly to its Chromium LocalStorage; no Settings-page clicking required.
+- **One-click launchers** that bring up the whole stack and start Pluely.
 
-Local STT (faster than cloud) uses Whisper:
-
-```bash
-pip install -U whisper.cpp pywhispercpp  # or whatever your prefered whisper.cpp Python binding is
-python whisper-server.py  # runs on http://127.0.0.1:8766
-```
-
-Then configure a custom STT provider in Pluely Settings pointed at the whisper-server.
+See [`proxy/README.md`](./proxy/README.md) for install + usage.
 
 ## Keyboard shortcuts (defaults)
 

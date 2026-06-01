@@ -1,0 +1,10 @@
+{
+  "name": "pluely-level-tools",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "better-sqlite3": "^12.10.0",
+    "classic-level": "^2.0.0"
+  }
+}

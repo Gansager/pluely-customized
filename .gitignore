@@ -30,3 +30,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# proxy/ runtime artifacts (the template files themselves are tracked)
+proxy/whisper-venv/
+proxy/level-tools/node_modules/
+proxy/leveldb-backup-*/
+proxy/*.wav
+proxy/pluely-runtime.*
+proxy/__pycache__/
+proxy/**/__pycache__/
