@@ -246,6 +246,210 @@
     text-align: center;
   }
   footer a { color: var(--text-dim); }
+
+  /* ===== How-it-works pipeline ===== */
+  .pipeline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    margin: 2rem auto 0.5rem;
+    max-width: 560px;
+  }
+  .stage {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.95rem 1.1rem;
+    width: 100%;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .stage.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(124,156,255,0.25); }
+  .stage-tag {
+    font-size: 0.7rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.35rem;
+    display: block;
+  }
+  .stage-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.15rem; color: var(--text); }
+  .stage-sub { font-size: 0.82rem; color: var(--text-dim); margin: 0; }
+
+  /* Connector: vertical line with traveling pulse dot */
+  .connector {
+    width: 2px;
+    height: 28px;
+    background: var(--border-strong);
+    position: relative;
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .connector::after {
+    content: '';
+    position: absolute;
+    left: -2px;
+    width: 6px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 3px;
+    box-shadow: 0 0 10px rgba(124,156,255,0.7);
+    animation: pulse-down 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse-down {
+    0%   { top: -18px; opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { top: 32px; opacity: 0; }
+  }
+
+  /* Capture stage: two sources side by side */
+  .stage-capture {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+  }
+  .source { display: flex; align-items: center; gap: 0.65rem; }
+  .source-icon { font-size: 1.4rem; line-height: 1; }
+  .source-info { display: flex; flex-direction: column; flex: 1; min-width: 0; }
+  .source-label { font-size: 0.88rem; font-weight: 600; color: var(--text); }
+  .source-meta { font-size: 0.72rem; color: var(--text-faint); }
+  .waveform { display: flex; gap: 2px; align-items: flex-end; height: 18px; }
+  .waveform span {
+    display: block;
+    width: 3px;
+    background: var(--accent);
+    border-radius: 1px;
+    height: 3px;
+    animation: wave 1.1s ease-in-out infinite;
+  }
+  .waveform.them span { background: var(--orange); animation-duration: 1.4s; }
+  @keyframes wave { 0%,100%{height:3px;} 50%{height:16px;} }
+  .waveform span:nth-child(1) { animation-delay: 0s; }
+  .waveform span:nth-child(2) { animation-delay: 0.12s; }
+  .waveform span:nth-child(3) { animation-delay: 0.24s; }
+  .waveform span:nth-child(4) { animation-delay: 0.18s; }
+  .waveform span:nth-child(5) { animation-delay: 0.06s; }
+
+  /* Service stage (STT / AI) */
+  .stage-service {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .stage-service > div { min-width: 0; }
+  .stage-port {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(124,156,255,0.25);
+    padding: 0.2em 0.55em;
+    border-radius: 5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Transcript stage */
+  .stage-transcript { min-height: 110px; }
+  .transcript-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text);
+    min-height: 76px;
+  }
+  .transcript-lines .line {
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+  .transcript-lines .line.visible { opacity: 1; transform: translateY(0); }
+  .tag {
+    display: inline-block;
+    padding: 0.05em 0.45em;
+    border-radius: 3px;
+    font-weight: 700;
+    font-size: 0.74em;
+    margin-right: 0.4em;
+    letter-spacing: 0.03em;
+    vertical-align: 1px;
+  }
+  .tag.me   { background: rgba(95,223,154,0.15);  color: var(--green);  }
+  .tag.them { background: rgba(243,165,90,0.15); color: var(--orange); }
+
+  /* Trigger stage (Ctrl+Space) */
+  .stage-trigger {
+    background: transparent;
+    border-color: transparent;
+    padding: 0.3rem 0;
+  }
+  .stage-trigger .keys {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    align-items: center;
+  }
+  .stage-trigger .label {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin-right: 0.45rem;
+  }
+  kbd {
+    background: var(--bg-elev);
+    border: 1px solid var(--border-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    padding: 0.22em 0.55em;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82em;
+    color: var(--text);
+    display: inline-block;
+  }
+  .stage-trigger kbd { animation: key-pulse 3.6s ease-in-out infinite; }
+  .stage-trigger kbd:nth-child(3) { animation-delay: 0.08s; }
+  @keyframes key-pulse {
+    0%, 78%, 100% {
+      background: var(--bg-elev);
+      border-color: var(--border-strong);
+      transform: translateY(0);
+      box-shadow: 0 0 0 0 rgba(124,156,255,0);
+    }
+    85%, 90% {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      transform: translateY(2px);
+      box-shadow: 0 0 16px 2px rgba(124,156,255,0.45);
+    }
+  }
+
+  /* Response stage */
+  .stage-response { min-height: 72px; }
+  .response-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text);
+    min-height: 38px;
+    word-break: break-word;
+  }
+  .caret {
+    display: inline-block;
+    width: 6px;
+    height: 0.95em;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    margin-left: 1px;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  @media (max-width: 520px) {
+    .stage-capture { grid-template-columns: 1fr; gap: 0.6rem; }
+    .stage-service { flex-direction: column; align-items: flex-start; }
+  }
 </style>
 </head>
 <body>
@@ -267,6 +471,86 @@
     </div>
   </div>
 </header>
+
+<section>
+  <div class="container">
+    <h2>How it works</h2>
+    <p>A live meeting flows top-to-bottom through three local services. AI never fires automatically — you press <kbd>Ctrl</kbd>+<kbd>Space</kbd> when you want a reply.</p>
+
+    <div class="pipeline">
+      <!-- 1. Capture -->
+      <div class="stage stage-capture" id="stage-capture">
+        <div class="source">
+          <span class="source-icon">🎙️</span>
+          <div class="source-info">
+            <span class="source-label">Mic</span>
+            <span class="source-meta">VAD chunks</span>
+          </div>
+          <div class="waveform me"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="source">
+          <span class="source-icon">🔊</span>
+          <div class="source-info">
+            <span class="source-label">System audio</span>
+            <span class="source-meta">WASAPI loopback</span>
+          </div>
+          <div class="waveform them"><span></span><span></span><span></span><span></span><span></span></div>
+        </div>
+      </div>
+
+      <div class="connector"></div>
+
+      <!-- 2. STT -->
+      <div class="stage stage-service" id="stage-stt">
+        <div>
+          <span class="stage-tag">Speech-to-text</span>
+          <div class="stage-title">Google Cloud STT</div>
+          <p class="stage-sub">or local Whisper fallback — same endpoint, swap to switch</p>
+        </div>
+        <span class="stage-port">:8766</span>
+      </div>
+
+      <div class="connector"></div>
+
+      <!-- 3. Transcript -->
+      <div class="stage stage-transcript" id="stage-transcript">
+        <span class="stage-tag">Tagged transcript</span>
+        <div class="transcript-lines" id="transcriptLines">
+          <div class="line"><span class="tag them">THEM</span>Where are we with the migration?</div>
+          <div class="line"><span class="tag me">ME</span>Backfill running, about 80% done.</div>
+          <div class="line"><span class="tag them">THEM</span>Any blockers we should know about?</div>
+        </div>
+      </div>
+
+      <!-- 4. Trigger -->
+      <div class="stage stage-trigger">
+        <div class="keys">
+          <span class="label">You press</span>
+          <kbd>Ctrl</kbd>
+          <kbd>Space</kbd>
+        </div>
+      </div>
+
+      <!-- 5. AI -->
+      <div class="stage stage-service" id="stage-ai">
+        <div>
+          <span class="stage-tag">AI brain</span>
+          <div class="stage-title">Claude Code proxy</div>
+          <p class="stage-sub">or local Ollama on <code>:11434</code> — switchable per launch</p>
+        </div>
+        <span class="stage-port">:8765</span>
+      </div>
+
+      <div class="connector"></div>
+
+      <!-- 6. Response -->
+      <div class="stage stage-response" id="stage-response">
+        <span class="stage-tag">Ready-to-speak reply</span>
+        <div class="response-text" id="responseText"><span class="caret"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section>
   <div class="container">
@@ -433,6 +717,85 @@ Start-Process "$env:LOCALAPPDATA\Pluely\pluely.exe"</code></pre>
     Built on top of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> · Licensed GPL v3 · <a href="https://github.com/Gansager/pluely-customized">Source on GitHub</a>
   </div>
 </footer>
+
+<script>
+(function () {
+  const lines = Array.from(document.querySelectorAll('#transcriptLines .line'));
+  const responseEl = document.getElementById('responseText');
+  const stages = {
+    capture:    document.getElementById('stage-capture'),
+    stt:        document.getElementById('stage-stt'),
+    transcript: document.getElementById('stage-transcript'),
+    ai:         document.getElementById('stage-ai'),
+    response:   document.getElementById('stage-response'),
+  };
+  const responses = [
+    'Backfill is 80% complete, ETA 20 minutes — staging is clean.',
+    'No blockers. Prod cutover stays scheduled for Friday morning.',
+    'Schema migration is on track; rollback plan is in the runbook.',
+  ];
+  let respIdx = 0;
+  let typingTimer = null;
+
+  function setActive(key) {
+    Object.values(stages).forEach(s => s && s.classList.remove('active'));
+    if (stages[key]) stages[key].classList.add('active');
+  }
+
+  function typeResponse(text, done) {
+    if (typingTimer) clearInterval(typingTimer);
+    let i = 0;
+    responseEl.innerHTML = '<span class="caret"></span>';
+    typingTimer = setInterval(() => {
+      i++;
+      responseEl.innerHTML = text.slice(0, i) + '<span class="caret"></span>';
+      if (i >= text.length) {
+        clearInterval(typingTimer);
+        typingTimer = null;
+        if (done) done();
+      }
+    }, 32);
+  }
+
+  function cycle() {
+    // 1. Reset
+    lines.forEach(l => l.classList.remove('visible'));
+    responseEl.innerHTML = '<span class="caret"></span>';
+    setActive('capture');
+
+    // 2. Surface transcript line-by-line — STT then transcript activates
+    setTimeout(() => setActive('stt'), 500);
+    lines.forEach((line, i) => {
+      setTimeout(() => {
+        setActive('transcript');
+        line.classList.add('visible');
+      }, 1100 + i * 1700);
+    });
+
+    // 3. AI activates and types
+    const aiStart = 1100 + lines.length * 1700 + 600;
+    setTimeout(() => {
+      setActive('ai');
+      setTimeout(() => {
+        setActive('response');
+        typeResponse(responses[respIdx], () => {
+          respIdx = (respIdx + 1) % responses.length;
+          // 4. Hold the result, then restart
+          setTimeout(cycle, 3800);
+        });
+      }, 700);
+    }, aiStart);
+  }
+
+  // Respect reduced motion: show one static example, no looping animation
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    lines.forEach(l => l.classList.add('visible'));
+    responseEl.innerHTML = responses[0];
+  } else {
+    cycle();
+  }
+})();
+</script>
 
 </body>
 </html>
