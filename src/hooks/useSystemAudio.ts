@@ -513,7 +513,11 @@ export function useSystemAudio() {
     async (
       transcription: string,
       prompt: string,
-      previousMessages: Message[]
+      previousMessages: Message[],
+      // What to store/show as the user message in the conversation. Defaults to
+      // `transcription`. Used by message actions, which send an instruction-
+      // wrapped prompt to the AI but want only the original message displayed.
+      displayUserContent?: string
     ) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -560,13 +564,14 @@ export function useSystemAudio() {
 
         if (fullResponse) {
           const timestamp = Date.now();
+          const shownContent = displayUserContent ?? transcription;
           setConversation((prev) => ({
             ...prev,
             messages: [
               {
                 id: generateMessageId("user", timestamp),
                 role: "user" as const,
-                content: transcription,
+                content: shownContent,
                 timestamp,
               },
               {
@@ -578,7 +583,7 @@ export function useSystemAudio() {
               ...prev.messages,
             ],
             updatedAt: timestamp,
-            title: prev.title || generateConversationTitle(transcription),
+            title: prev.title || generateConversationTitle(shownContent),
           }));
         }
       } catch (err) {
@@ -754,17 +759,31 @@ export function useSystemAudio() {
   // about a single message, not in-call coaching.
   const runMessageAction = useCallback(
     async (content: string, action: "explain" | "translate" | "draft") => {
-      const prompts: Record<typeof action, string> = {
-        explain:
-          "Explain this message in detail, in Russian. Cover the context, terminology, what's meant, and any nuances. No fluff, but deep enough to be clear.",
-        translate:
-          "Translate this message to Russian. If it's already in Russian, still produce a clean Russian version (rephrase if the original is rough). Return only the translation, no commentary.",
-        draft:
-          "This is a question or request. Give a direct, concrete, professional answer on point, in the same language as the original. No preamble, no 'Here is the answer:' — only the answer itself.",
-      };
       const cleaned = content.replace(/^\[(ME|THEM)\]\s*/, "");
+      // The Claude-proxy strips ALL system messages (proxy.py:301), so an
+      // instruction sent only as a system prompt never reaches the model and
+      // the proxy's coach context takes over (translate → "I don't understand
+      // what to answer"). Put the instruction in the USER message so it
+      // survives — this also works for providers that DO honor system prompts.
+      // We still display only `cleaned` in the conversation, not the wrapper.
+      const userMessages: Record<typeof action, string> = {
+        explain: `Explain the message below in detail, in Russian — its context, terminology, what is meant, and any nuances. No fluff.\n\nMessage:\n${cleaned}`,
+        translate: `Translate the message below into Russian and output ONLY the translation — no commentary, no explanation, no preface. If it is already in Russian, output a cleaned-up Russian version. This is a pure translation task, not a question to answer.\n\nMessage:\n${cleaned}`,
+        draft: `The message below is a question or request directed at me. Write a direct, concrete, professional reply in the SAME language as the message. Output only the reply itself — no preface.\n\nMessage:\n${cleaned}`,
+      };
+      const systemPrompts: Record<typeof action, string> = {
+        explain: "You explain messages clearly and accurately in Russian.",
+        translate:
+          "You are a translation engine. Output only the translation, nothing else.",
+        draft: "You draft direct, professional replies.",
+      };
       setIsPopoverOpen(true);
-      await processWithAI(cleaned, prompts[action], []);
+      await processWithAI(
+        userMessages[action],
+        systemPrompts[action],
+        [],
+        cleaned
+      );
     },
     [processWithAI, setIsPopoverOpen]
   );
