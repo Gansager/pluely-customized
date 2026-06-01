@@ -339,7 +339,7 @@
           <li>The bundled <code>pluely-proxy</code> setup — local Claude Code CLI, supports screenshots via the <code>Read</code> tool.</li>
         </ul>
       </li>
-      <li>Configure an STT provider — local Whisper via the proxy is the fastest path.</li>
+      <li>Configure an STT provider — Google Cloud STT via the bundled proxy gives the best RU / UK / EN accuracy; local Whisper is the no-network fallback.</li>
     </ol>
   </div>
 </section>
@@ -385,21 +385,17 @@ Start-Process "$env:LOCALAPPDATA\Pluely\pluely.exe"</code></pre>
 
 <section>
   <div class="container">
-    <h2>Optional: local Claude Code proxy</h2>
-    <p>If you want to route Pluely through a local Claude Code CLI (no Anthropic API credits) <strong>and</strong> want screenshot support via Claude Code's <code>Read</code> tool, set up the companion proxy:</p>
-    <ol class="steps">
-      <li>Install <code>@anthropic-ai/claude-code</code> globally and authenticate it once interactively:
-<pre><code>npm install -g @anthropic-ai/claude-code
-claude  # one-time login</code></pre>
-      </li>
-      <li>Place the proxy scripts somewhere local (e.g. <code>~/pluely-proxy/</code>). The proxy code is <strong>not</strong> in this repo — it's a private personal setup. The key file is <code>proxy.py</code> (HTTP server forwarding OpenAI-format requests to <code>claude -p</code>, with image-to-temp-file extraction).</li>
-      <li>Configure a custom AI provider in Pluely Settings pointed at <code>http://127.0.0.1:8765/v1/chat/completions</code>.</li>
-    </ol>
-
-    <p>Local STT (faster than cloud) uses Whisper:</p>
-<pre><code>pip install -U whisper-cpp-python  # or your preferred whisper.cpp binding
-python whisper-server.py           # runs on http://127.0.0.1:8766</code></pre>
-    <p>Then configure a custom STT provider in Pluely Settings pointed at the whisper-server.</p>
+    <h2>Optional: companion <code>proxy/</code> stack</h2>
+    <p>The fork ships a companion stack under <a href="https://github.com/Gansager/pluely-customized/tree/master/proxy"><code>proxy/</code></a> that lets you route AI through your local Claude login, transcribe with Google Cloud STT, and bring the whole thing up with a single desktop shortcut.</p>
+    <ul>
+      <li><strong>Claude Code proxy</strong> (<code>proxy.py</code>, port 8765) — OpenAI-compatible HTTP server forwarding requests to your <code>claude</code> CLI login. No Anthropic API credits burned. Supports streaming and screenshot attachments via Claude Code's <code>Read</code> tool.</li>
+      <li><strong>Google STT server</strong> (<code>google-stt-server.py</code>, port 8766) — far better RU / UK / EN accuracy than local Whisper. ~1–2 s latency per chunk. First 60 min/month free per GCP project, then $0.024/min standard.</li>
+      <li><strong>Whisper fallback</strong> (<code>whisper-server.py</code>, port 8766) — local <a href="https://github.com/SYSTRAN/faster-whisper">faster-whisper</a>, no network, no API key. Same endpoint as Google STT; swap launchers to switch.</li>
+      <li><strong>Meeting summarizer</strong> (<code>summarize-meeting.py</code>) — Markdown summary of the current session via <code>claude -p</code>, copied to clipboard.</li>
+      <li><strong>LevelDB setup tools</strong> (<code>level-tools/*.mjs</code>) — write Pluely's custom provider config directly to its Chromium LocalStorage. No Settings clicking.</li>
+      <li><strong>One-click launchers</strong> (<code>.cmd</code>) that bring up the whole stack and start Pluely.</li>
+    </ul>
+    <p>Full install + usage guide: <a href="https://github.com/Gansager/pluely-customized/blob/master/proxy/README.md"><code>proxy/README.md</code></a>.</p>
   </div>
 </section>
 
