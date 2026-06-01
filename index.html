@@ -1,13 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + React + Typescript</title>
-  </head>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pluely (customized) — download</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    background: radial-gradient(1200px 600px at 50% -10%, #1c2542 0%, #0d111c 55%, #090c14 100%);
+    color: #e7ecf5; display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+  }
+  .card {
+    width: 100%; max-width: 760px; background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 44px 40px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.45);
+  }
+  h1 { font-size: 2.1rem; margin: 0 0 6px; letter-spacing: -.02em; }
+  .sub { color: #9fb0c9; margin: 0 0 28px; font-size: 1.02rem; }
+  .dl {
+    display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+    background: linear-gradient(180deg,#4f8cff,#2f6bff); color: #fff; font-weight: 650; font-size: 1.12rem;
+    padding: 16px 28px; border-radius: 14px; box-shadow: 0 12px 30px rgba(47,107,255,.35);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .dl:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(47,107,255,.45); }
+  .meta { color: #7f90ab; font-size: .85rem; margin-top: 12px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0 8px; }
+  @media (max-width: 560px){ .grid { grid-template-columns: 1fr; } }
+  .mode { border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 18px 18px; background: rgba(255,255,255,.02); }
+  .mode h3 { margin: 0 0 8px; font-size: 1.05rem; }
+  .mode p { margin: 0; color: #a9b8d0; font-size: .92rem; line-height: 1.5; }
+  .tag { display:inline-block; font-size:.72rem; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; vertical-align:middle; }
+  .tag.local { background:#16351f; color:#7ee29a; border:1px solid #2c6b3f; }
+  .tag.claude { background:#2a2440; color:#c3b0ff; border:1px solid #5743a0; }
+  ul.notes { color:#a9b8d0; font-size:.9rem; line-height:1.6; padding-left: 20px; margin: 22px 0 0; }
+  .foot { margin-top: 28px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,.08); font-size:.86rem; color:#8295b1; }
+  .foot a { color: #7fb0ff; text-decoration: none; }
+  code { background: rgba(255,255,255,.07); padding: 1px 6px; border-radius: 6px; font-size: .85em; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Pluely <span style="color:#7fb0ff">— customized</span></h1>
+    <p class="sub">A Windows AI meeting assistant: live transcription, screenshots, and instant answers. Self-contained — speech-to-text is bundled, no setup required.</p>
 
-  <body style="background-color: transparent !important">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <a class="dl" href="https://github.com/Gansager/pluely-customized/releases/download/v0.1.9-dist/Pluely_0.1.9_x64-setup.exe">
+      ⬇ Download for Windows
+    </a>
+    <div class="meta">v0.1.9 · ~202&nbsp;MB · Windows 10 / 11 (64-bit) · installer (.exe)</div>
+
+    <div class="grid">
+      <div class="mode">
+        <h3>Local<span class="tag local">no account</span></h3>
+        <p>Fully offline. Bundled Whisper speech-to-text + the <code>minicpm-v</code> vision model (pulled at install, ~5.5&nbsp;GB) so screenshots work too. No API key, no login.</p>
+      </div>
+      <div class="mode">
+        <h3>Claude<span class="tag claude">smarter</span></h3>
+        <p>Routes answers through your local <code>claude</code> CLI. Needs a one-time <code>claude login</code> and a Claude subscription. Speech-to-text still bundled.</p>
+      </div>
+    </div>
+
+    <ul class="notes">
+      <li>Pick <strong>Local</strong> or <strong>Claude</strong> during installation — switchable later in Settings.</li>
+      <li>The app starts and stops its bundled helper servers automatically.</li>
+      <li><strong>Unsigned build:</strong> Windows SmartScreen will warn — click <em>“More info” → “Run anyway”</em>.</li>
+    </ul>
+
+    <div class="foot">
+      Source &amp; changelog: <a href="https://github.com/Gansager/pluely-customized">github.com/Gansager/pluely-customized</a>
+      &nbsp;·&nbsp; <a href="https://github.com/Gansager/pluely-customized/releases">All releases</a>
+      &nbsp;·&nbsp; GPL-3.0
+    </div>
+  </div>
+</body>
 </html>
