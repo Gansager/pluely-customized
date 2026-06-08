@@ -198,20 +198,20 @@ def copy_to_clipboard(text: str):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Транскрибировать запись .webm и сохранить .md саммари рядом.")
-    ap.add_argument("video", help="Путь к записанному .webm")
+    ap = argparse.ArgumentParser(description="Транскрибировать запись (.webm видео или .wav диктофон) и сохранить .md саммари рядом.")
+    ap.add_argument("video", help="Путь к записи (.webm или .wav)")
     ap.add_argument("--open", action="store_true", help="Открыть итоговый .md после сохранения.")
     ap.add_argument("--force", action="store_true", help="Не пропускать короткие записи.")
     a = ap.parse_args()
 
     video = Path(a.video)
     if not video.exists():
-        sys.exit(f"Видео не найдено: {video}")
+        sys.exit(f"Запись не найдена: {video}")
     if not API_KEY:
         sys.exit("GOOGLE_STT_API_KEY не задан в pluely-proxy/.env")
 
     dur = probe_duration(video)
-    print(f"Видео: {video.name} ({dur:.0f}с)", flush=True)
+    print(f"Запись: {video.name} ({dur:.0f}с)", flush=True)
     if not a.force and 0 < dur < MIN_DURATION_SECS:
         print(f"Запись короче {MIN_DURATION_SECS}с — пропускаю саммари (--force чтобы всё равно сделать).")
         return
@@ -226,8 +226,9 @@ def main():
 
     out = video.with_suffix(".md")
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    kind = "аудио" if video.suffix.lower() == ".wav" else "видео"
     header = (f"# Запись — {video.stem}\n\n"
-              f"_видео: [{video.name}]({video.name}) · длительность: {dur:.0f}с · саммари: {when}_\n\n")
+              f"_{kind}: [{video.name}]({video.name}) · длительность: {dur:.0f}с · саммари: {when}_\n\n")
     out.write_text(
         header + summary
         + "\n\n---\n\n<details><summary>Полная расшифровка</summary>\n\n```\n"

@@ -238,3 +238,53 @@ export async function fetchSTT(params: STTParams): Promise<string> {
     throw new Error(msg);
   }
 }
+
+/**
+ * fetchSTT with a per-attempt timeout and automatic retry on transient
+ * failures. The STT round-trip is Pluely -> local STT server -> Google Cloud;
+ * a single network blip or a momentarily slow Google response would otherwise
+ * surface as a hard "timed out" error on the very first miss. We give each
+ * attempt its own timeout and retry once (with a short backoff) before giving
+ * up, so transient stalls recover invisibly. Empty results ("No transcription
+ * found") come back from fetchSTT as a returned string — not a thrown error —
+ * so they are NOT retried, which is correct.
+ */
+export async function fetchSTTWithRetry(
+  params: STTParams,
+  opts: { attempts?: number; timeoutMs?: number; backoffMs?: number } = {}
+): Promise<string> {
+  const attempts = opts.attempts ?? 2;
+  const timeoutMs = opts.timeoutMs ?? 18000;
+  const backoffMs = opts.backoffMs ?? 500;
+
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              new Error(
+                `Speech transcription timed out (${Math.round(
+                  timeoutMs / 1000
+                )}s)`
+              )
+            ),
+          timeoutMs
+        );
+      });
+      return await Promise.race([fetchSTT(params), timeoutPromise]);
+    } catch (err) {
+      lastError = err;
+      if (attempt < attempts) {
+        await new Promise((r) => setTimeout(r, backoffMs));
+      }
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error(String(lastError ?? "STT failed"));
+}

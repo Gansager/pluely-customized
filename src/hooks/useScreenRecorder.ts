@@ -83,6 +83,11 @@ export function useScreenRecorder() {
         // created (set_size is async on Windows); otherwise the picker can be
         // sized to the old 54px bounds and clip again.
         await new Promise((r) => setTimeout(r, 200));
+        // NOTE: the picker's "Share system audio" checkbox CANNOT be pre-checked
+        // from JS — it's a deliberate Chromium privacy control that always
+        // defaults to OFF (systemAudio:"include" only *offers* it, which is
+        // already the default). The user must tick it manually when sharing the
+        // entire screen. (Patch 18 attempt reverted 2026-06-08 — see memory.)
         displayStream = await navigator.mediaDevices.getDisplayMedia({
           video: { frameRate: 30 },
           audio: true,

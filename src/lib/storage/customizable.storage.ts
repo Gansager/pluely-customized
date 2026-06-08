@@ -15,6 +15,11 @@ export interface CustomizableState {
   cursor: {
     type: CursorType;
   };
+  // When enabled, the window is hidden from screen capture/recording (default).
+  // Disable to make Pluely visible in shares.
+  contentProtection: {
+    isEnabled: boolean;
+  };
 }
 
 export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
@@ -22,6 +27,7 @@ export const DEFAULT_CUSTOMIZABLE_STATE: CustomizableState = {
   alwaysOnTop: { isEnabled: false },
   autostart: { isEnabled: true },
   cursor: { type: "invisible" },
+  contentProtection: { isEnabled: true },
 };
 
 /**
@@ -42,6 +48,9 @@ export const getCustomizableState = (): CustomizableState => {
         parsedState.alwaysOnTop || DEFAULT_CUSTOMIZABLE_STATE.alwaysOnTop,
       autostart: parsedState.autostart || DEFAULT_CUSTOMIZABLE_STATE.autostart,
       cursor: parsedState.cursor || DEFAULT_CUSTOMIZABLE_STATE.cursor,
+      contentProtection:
+        parsedState.contentProtection ||
+        DEFAULT_CUSTOMIZABLE_STATE.contentProtection,
     };
   } catch (error) {
     console.error("Failed to get customizable state:", error);
@@ -98,6 +107,18 @@ export const updateCursorType = (type: CursorType): CustomizableState => {
 export const updateAutostart = (isEnabled: boolean): CustomizableState => {
   const currentState = getCustomizableState();
   const newState = { ...currentState, autostart: { isEnabled } };
+  setCustomizableState(newState);
+  return newState;
+};
+
+/**
+ * Update content protection state (hide window from screen capture)
+ */
+export const updateContentProtection = (
+  isEnabled: boolean
+): CustomizableState => {
+  const currentState = getCustomizableState();
+  const newState = { ...currentState, contentProtection: { isEnabled } };
   setCustomizableState(newState);
   return newState;
 };

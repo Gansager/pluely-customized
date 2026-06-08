@@ -47,7 +47,7 @@ PRIMARY_LANG = os.environ.get("GOOGLE_STT_PRIMARY_LANGUAGE", "ru-RU").strip()
 ALT_LANGS = [s.strip() for s in os.environ.get("GOOGLE_STT_ALT_LANGUAGES", "uk-UA,en-US").split(",") if s.strip()]
 STT_MODEL = os.environ.get("GOOGLE_STT_MODEL", "latest_long").strip()
 RECOGNIZE_URL = "https://speech.googleapis.com/v1/speech:recognize"
-HTTP_TIMEOUT = 30  # seconds
+HTTP_TIMEOUT = 15  # seconds — fail fast so the client can retry (client per-attempt is 18s)
 
 app = FastAPI(title="Pluely Google STT", version="1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])

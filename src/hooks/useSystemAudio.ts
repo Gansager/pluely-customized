@@ -3,7 +3,7 @@ import { useWindowResize, useGlobalShortcuts } from ".";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useApp } from "@/contexts";
-import { fetchSTT, fetchAIResponse } from "@/lib/functions";
+import { fetchSTTWithRetry, fetchAIResponse } from "@/lib/functions";
 import {
   DEFAULT_QUICK_ACTIONS,
   DEFAULT_SYSTEM_PROMPT,
@@ -270,25 +270,14 @@ export function useSystemAudio() {
 
             setIsProcessing(true);
 
-            // Add timeout wrapper for STT request (30 seconds)
-            const sttPromise = fetchSTT({
-              provider: providerConfig,
-              selectedProvider: selectedSttProvider,
-              audio: audioBlob,
-            });
-
-            const timeoutPromise = new Promise<string>((_, reject) => {
-              setTimeout(
-                () => reject(new Error("Speech transcription timed out (30s)")),
-                30000
-              );
-            });
-
             try {
-              const rawTranscription = await Promise.race([
-                sttPromise,
-                timeoutPromise,
-              ]);
+              // Retry transient STT stalls (network blip / slow Google) per
+              // attempt instead of surfacing a hard timeout on the first miss.
+              const rawTranscription = await fetchSTTWithRetry({
+                provider: providerConfig,
+                selectedProvider: selectedSttProvider,
+                audio: audioBlob,
+              });
 
               if (rawTranscription.trim()) {
                 // Patch 2: tag system audio source

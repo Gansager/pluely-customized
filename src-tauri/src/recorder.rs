@@ -118,17 +118,30 @@ pub async fn stop_call_recording(app: AppHandle) -> Result<String, String> {
 
     inner.stop_flag.store(true, Ordering::Release);
 
-    match inner.join_handle.await {
-        Ok(Ok(())) => {}
-        Ok(Err(e)) => warn!("Recorder finished with error: {}", e),
-        Err(e) => warn!("Recorder task panicked: {}", e),
-    }
+    let recording_ok = match inner.join_handle.await {
+        Ok(Ok(())) => true,
+        Ok(Err(e)) => {
+            warn!("Recorder finished with error: {}", e);
+            false
+        }
+        Err(e) => {
+            warn!("Recorder task panicked: {}", e);
+            false
+        }
+    };
 
     state.is_recording.store(false, Ordering::Release);
     *state
         .started_at
         .lock()
         .map_err(|e| format!("Lock poisoned: {}", e))? = None;
+
+    // Patch 17: same as screen recording — fire-and-forget audio summary next
+    // to the .wav. Only on a clean finish; the script's own duration/transcript
+    // guards skip short sound-checks. Never fails the stop.
+    if recording_ok {
+        spawn_recording_summary(&inner.output_path);
+    }
 
     Ok(inner.output_path.to_string_lossy().to_string())
 }
@@ -573,15 +586,17 @@ pub async fn finish_screen_recording(app: AppHandle) -> Result<String, String> {
 
     // Fire-and-forget: transcribe the recording's audio and write a same-named
     // .md summary next to it. Best-effort — never fail the stop on this.
-    spawn_video_summary(&final_path);
+    spawn_recording_summary(&final_path);
 
     Ok(final_path.to_string_lossy().to_string())
 }
 
-/// Launch ~/pluely-proxy/summarize-video.cmd <video> in its own console window,
-/// detached from Pluely. It transcribes the recording (Google STT) and writes
-/// "<video-stem>.md" beside the video. Errors are logged, never propagated.
-fn spawn_video_summary(video: &std::path::Path) {
+/// Launch ~/pluely-proxy/summarize-video.cmd <recording> in its own console
+/// window, detached from Pluely. It transcribes the recording (Google STT) and
+/// writes "<stem>.md" beside it. Used for BOTH the screen recording (.webm) and
+/// the dictaphone (.wav) — the script is format-agnostic (ffmpeg extracts the
+/// audio either way). Errors are logged, never propagated.
+fn spawn_recording_summary(recording: &std::path::Path) {
     #[cfg(target_os = "windows")]
     {
         let Ok(userprofile) = std::env::var("USERPROFILE") else {
@@ -593,11 +608,11 @@ fn spawn_video_summary(video: &std::path::Path) {
             warn!("summarize-video.cmd not found at {} — skipping summary", cmd_path);
             return;
         }
-        // `cmd /c start "" "<cmd>" "<video>"` opens a new console (progress is
-        // visible) and returns immediately so finish_screen_recording doesn't
-        // block on the minutes-long transcription + claude call.
+        // `cmd /c start "" "<cmd>" "<recording>"` opens a new console (progress
+        // is visible) and returns immediately so the stop handler doesn't block
+        // on the minutes-long transcription + claude call.
         if let Err(e) = std::process::Command::new("cmd")
-            .args(["/c", "start", "", &cmd_path, &video.to_string_lossy()])
+            .args(["/c", "start", "", &cmd_path, &recording.to_string_lossy()])
             .spawn()
         {
             warn!("Failed to spawn summarize-video.cmd: {}", e);
@@ -605,7 +620,7 @@ fn spawn_video_summary(video: &std::path::Path) {
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let _ = video;
+        let _ = recording;
     }
 }
 

@@ -96,6 +96,7 @@ pub fn run() {
             shortcuts::set_license_status,
             shortcuts::set_app_icon_visibility,
             shortcuts::set_always_on_top,
+            shortcuts::set_content_protection,
             shortcuts::exit_app,
             activate::activate_license_api,
             activate::deactivate_license_api,

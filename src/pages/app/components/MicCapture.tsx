@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useMicVAD } from "@ricky0123/vad-react";
 import { useApp } from "@/contexts";
-import { fetchSTT } from "@/lib";
+import { fetchSTTWithRetry } from "@/lib";
 import { floatArrayToWav } from "@/lib/utils";
 import { shouldUsePluelyAPI } from "@/lib/functions/pluely.api";
 
@@ -35,7 +35,7 @@ const MicCaptureInternal = ({ enabled, onTranscription }: Props) => {
           (p) => p.id === selectedSttProvider.provider
         );
         if (!providerConfig && !usePluelyAPI) return;
-        const text = await fetchSTT({
+        const text = await fetchSTTWithRetry({
           provider: usePluelyAPI ? undefined : providerConfig,
           selectedProvider: selectedSttProvider,
           audio: audioBlob,

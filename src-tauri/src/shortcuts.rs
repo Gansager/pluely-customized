@@ -573,6 +573,30 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
     Ok(())
 }
 
+/// Tauri command to set content protection (hides the window from screen
+/// capture / recording). Windows default to `enabled = true` (Pluely is
+/// invisible in shares). Set to `false` to make Pluely visible when sharing —
+/// e.g. when screen-recording the assistant itself. Applied to BOTH the overlay
+/// ("main") and the dashboard, since both are content-protected by default;
+/// a not-yet-created window is silently skipped.
+#[tauri::command]
+pub fn set_content_protection<R: Runtime>(
+    app: AppHandle<R>,
+    enabled: bool,
+) -> Result<(), String> {
+    if let Some(window) = app.get_webview_window("main") {
+        window
+            .set_content_protected(enabled)
+            .map_err(|e| format!("Failed to set content protection (main): {}", e))?;
+    }
+    if let Some(window) = app.get_webview_window("dashboard") {
+        window
+            .set_content_protected(enabled)
+            .map_err(|e| format!("Failed to set content protection (dashboard): {}", e))?;
+    }
+    Ok(())
+}
+
 /// Handle toggle dashboard shortcut
 fn handle_toggle_dashboard<R: Runtime>(app: &AppHandle<R>) {
     if let Some(dashboard_window) = app.get_webview_window("dashboard") {
