@@ -6,6 +6,7 @@ Companion services for the customized Pluely fork. None of this is required to r
 - **`google-stt-server.py`** — OpenAI-compatible STT server on `127.0.0.1:8766` that calls Google Cloud Speech-to-Text REST. Drop-in replacement for the built-in Whisper option, far better accuracy on non-English audio.
 - **`whisper-server.py`** — Fallback local STT (no network, no API key) using [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper). Same `127.0.0.1:8766` endpoint.
 - **`summarize-meeting.py`** — Reads Pluely's SQLite chat history, isolates the current meeting (session boundary = >30 min idle gap), runs it through `claude -p` with a structured prompt, writes a Markdown summary to `~/Documents/Pluely Meetings/`, and copies it to the clipboard.
+- **`summarize-video.py`** — Fired automatically by the fork when you stop a screen recording. Extracts the recording's audio with ffmpeg, splits it into ≤55 s chunks, transcribes each via Google STT, then runs `claude -p` to write a same-named `.md` recap next to the `.webm`. Skips sound-check-length clips. (`summarize-video.cmd` is the launcher the binary invokes.)
 - **One-click launchers (`.cmd`)** that bring up the whole stack and start Pluely.
 
 > The launchers expect the working copy to live at `%USERPROFILE%\pluely-proxy\`. The files in this `proxy/` folder are a clean template — copy them there before running.
@@ -121,6 +122,8 @@ The Ollama target model is hard-coded in `level-tools/select-provider.mjs` (defa
 | `google-stt-server.py` | Google STT REST server |
 | `whisper-server.py` | Local Whisper fallback STT server |
 | `summarize-meeting.py` | End-of-meeting Markdown summary generator |
+| `summarize-video.py` | Transcribe a stopped screen recording → same-named `.md` recap |
+| `summarize-video.cmd` | Launcher the fork invokes on recording stop |
 | `start-pluely-claude.cmd` | Full-stack launcher (Claude provider) |
 | `start-pluely-ollama.cmd` | Full-stack launcher (Ollama provider) |
 | `start-google-stt.cmd` | Standalone STT launcher (Google) |

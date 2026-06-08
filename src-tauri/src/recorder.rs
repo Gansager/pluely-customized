@@ -571,7 +571,42 @@ pub async fn finish_screen_recording(app: AppHandle) -> Result<String, String> {
         .await
         .map_err(|e| format!("Remux task join failed: {}", e))?;
 
+    // Fire-and-forget: transcribe the recording's audio and write a same-named
+    // .md summary next to it. Best-effort — never fail the stop on this.
+    spawn_video_summary(&final_path);
+
     Ok(final_path.to_string_lossy().to_string())
+}
+
+/// Launch ~/pluely-proxy/summarize-video.cmd <video> in its own console window,
+/// detached from Pluely. It transcribes the recording (Google STT) and writes
+/// "<video-stem>.md" beside the video. Errors are logged, never propagated.
+fn spawn_video_summary(video: &std::path::Path) {
+    #[cfg(target_os = "windows")]
+    {
+        let Ok(userprofile) = std::env::var("USERPROFILE") else {
+            warn!("USERPROFILE not set — skipping recording summary");
+            return;
+        };
+        let cmd_path = format!("{}\\pluely-proxy\\summarize-video.cmd", userprofile);
+        if !std::path::Path::new(&cmd_path).exists() {
+            warn!("summarize-video.cmd not found at {} — skipping summary", cmd_path);
+            return;
+        }
+        // `cmd /c start "" "<cmd>" "<video>"` opens a new console (progress is
+        // visible) and returns immediately so finish_screen_recording doesn't
+        // block on the minutes-long transcription + claude call.
+        if let Err(e) = std::process::Command::new("cmd")
+            .args(["/c", "start", "", &cmd_path, &video.to_string_lossy()])
+            .spawn()
+        {
+            warn!("Failed to spawn summarize-video.cmd: {}", e);
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = video;
+    }
 }
 
 /// Locate ffmpeg.exe: winget Links shim, then the versioned winget package
