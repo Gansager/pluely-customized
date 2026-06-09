@@ -49,10 +49,10 @@ const Dashboard = () => {
   return (
     <PageLayout
       title="Dashboard"
-      description="Pluely license to unlock faster responses, quicker support and premium features."
+      description="Memora license to unlock faster responses, quicker support and premium features."
       rightSlot={!hasActiveLicense ? <GetLicense /> : null}
     >
-      {/* Pluely API Setup */}
+      {/* Memora API Setup */}
       <PluelyApiSetup />
 
       <Usage

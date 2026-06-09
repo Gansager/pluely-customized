@@ -9,14 +9,13 @@ import {
   HomeIcon,
   PowerIcon,
   MailIcon,
-  CoffeeIcon,
   GlobeIcon,
   BugIcon,
   MessageSquareTextIcon,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import { useApp } from "@/contexts";
-import { XIcon, GithubIcon } from "@/components";
+import { GithubIcon } from "@/components";
 
 export const useMenuItems = () => {
   const { hasActiveLicense } = useApp();
@@ -80,19 +79,19 @@ export const useMenuItems = () => {
       ? [
           {
             icon: MailIcon,
-            label: "Contact Support",
-            href: "mailto:support@pluely.com",
+            label: "Get help",
+            href: "https://github.com/Gansager/pluely-customized/issues",
           },
         ]
       : []),
     {
       icon: BugIcon,
       label: "Report a bug",
-      href: "https://github.com/iamsrikanthnani/pluely/issues/new?template=bug-report.yml",
+      href: "https://github.com/Gansager/pluely-customized/issues/new",
     },
     {
       icon: PowerIcon,
-      label: "Quit pluely",
+      label: "Quit Memora",
       action: async () => {
         await invoke("exit_app");
       },
@@ -107,22 +106,12 @@ export const useMenuItems = () => {
     {
       title: "Website",
       icon: GlobeIcon,
-      link: "https://pluely.com",
+      link: "https://gansager.github.io/pluely-customized",
     },
     {
       title: "Github",
       icon: GithubIcon,
-      link: "https://github.com/iamsrikanthnani/pluely",
-    },
-    {
-      title: "Buy Me a Coffee",
-      icon: CoffeeIcon,
-      link: "https://buymeacoffee.com/srikanthnani",
-    },
-    {
-      title: "Follow on X",
-      icon: XIcon,
-      link: "https://x.com/srikanthnani",
+      link: "https://github.com/Gansager/pluely-customized",
     },
   ];
 

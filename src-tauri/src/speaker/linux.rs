@@ -1,4 +1,4 @@
-// Pluely linux speaker input and stream
+// Memora linux speaker input and stream
 use super::AudioDevice;
 use anyhow::{anyhow, Result};
 use futures_util::Stream;

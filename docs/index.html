@@ -3,26 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pluely — Customized · Windows AI meeting assistant</title>
-<meta name="description" content="A self-contained Windows AI meeting assistant: live transcription, screenshots with vision, and one-key answers during calls. Bundled speech-to-text — no setup, no API key required." />
-<meta property="og:title" content="Pluely — Customized" />
-<meta property="og:description" content="Self-contained Windows AI meeting assistant. Live transcription, screenshot vision, one-key answers. No setup required." />
+<title>Memora — Private Meeting Memory</title>
+<meta name="description" content="Memora is a privacy-first, local-first desktop AI meeting assistant. Record meetings, capture screen and audio, generate transcripts and summaries, and query your meeting history with any AI model — Claude, OpenAI, Gemini, Ollama, or local. Your data stays on your machine." />
+<meta property="og:title" content="Memora — Private Meeting Memory" />
+<meta property="og:description" content="Record meetings, generate summaries with any AI model, and never lose important context again. Privacy-first, local-first, bring your own model." />
 <meta property="og:type" content="website" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0b0d12;
-    --bg-elev: #12151c;
-    --bg-card: #161a23;
+    --bg: #0e1015;
+    --bg-elev: #14171f;
+    --bg-card: #171b24;
     --border: #1f2530;
     --border-strong: #2a3140;
-    --text: #e6eaf2;
+    --text: #f4f6fb;
     --text-dim: #9aa3b2;
     --text-faint: #6b7280;
-    --accent: #7c9cff;
-    --accent-soft: #1f2a4d;
+    --accent: #5b8def;
+    --accent-soft: #182542;
     --green: #5fdf9a;
     --green-soft: #16351f;
     --purple: #c3b0ff;
@@ -70,12 +71,13 @@
 
   /* ===== Hero ===== */
   header.hero {
-    padding: 5rem 0 3.5rem;
+    padding: 4rem 0 3.5rem;
     border-bottom: 1px solid var(--border);
     background:
-      radial-gradient(900px 500px at 50% -10%, rgba(124, 156, 255, 0.13), transparent 60%),
-      radial-gradient(700px 400px at 85% 10%, rgba(195, 176, 255, 0.07), transparent 55%);
+      radial-gradient(900px 500px at 50% -10%, rgba(91, 141, 239, 0.16), transparent 60%),
+      radial-gradient(700px 400px at 85% 10%, rgba(127, 168, 246, 0.08), transparent 55%);
   }
+  .brand-logo { height: 52px; width: auto; margin-bottom: 1.6rem; }
   .badge {
     display: inline-block;
     font-size: 0.78rem;
@@ -84,7 +86,7 @@
     border-radius: 999px;
     background: var(--accent-soft);
     color: var(--accent);
-    border: 1px solid rgba(124, 156, 255, 0.25);
+    border: 1px solid rgba(91, 141, 239, 0.3);
     margin-bottom: 1.25rem;
     letter-spacing: 0.02em;
   }
@@ -99,8 +101,13 @@
   .tagline {
     font-size: 1.18rem;
     color: var(--text-dim);
-    margin: 0 0 2rem;
+    margin: 0 0 1.4rem;
     max-width: 640px;
+  }
+  .alt-taglines { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0 0 2rem; }
+  .alt-taglines span {
+    font-size: 0.8rem; color: var(--text-dim); background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 999px; padding: 0.3rem 0.8rem;
   }
   .cta-row { display: flex; flex-wrap: wrap; gap: 0.85rem; align-items: center; }
   .btn {
@@ -115,11 +122,11 @@
     border: 1px solid transparent;
   }
   .btn-primary {
-    background: linear-gradient(180deg, #94afff, var(--accent));
+    background: linear-gradient(180deg, #7fa8f6, var(--accent));
     color: #0b0d12;
-    box-shadow: 0 12px 30px rgba(124, 156, 255, 0.32);
+    box-shadow: 0 12px 30px rgba(91, 141, 239, 0.32);
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(124, 156, 255, 0.42); text-decoration: none; }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(91, 141, 239, 0.42); text-decoration: none; }
   .btn-ghost {
     background: transparent;
     color: var(--text);
@@ -137,7 +144,7 @@
   }
   .meta-row .pill { display: inline-flex; align-items: center; gap: 0.4rem; }
   .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; }
-  .dot.orange { background: var(--orange); }
+  .dot.blue { background: var(--accent); }
   .smartscreen {
     margin-top: 1.4rem;
     font-size: 0.85rem;
@@ -166,27 +173,20 @@
   ul { margin: 0 0 1rem; padding-left: 1.4rem; color: var(--text-dim); }
   li { margin-bottom: 0.5rem; }
 
-  /* ===== Install modes ===== */
-  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.5rem; }
-  @media (max-width: 620px){ .modes { grid-template-columns: 1fr; } }
-  .mode {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.3rem 1.4rem;
-    position: relative;
+  /* ===== Provider grid ===== */
+  .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.8rem; margin-top: 0.4rem; }
+  .provider {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 0.95rem 1.1rem; display: flex; flex-direction: column; gap: 0.2rem;
   }
-  .mode.local { border-color: rgba(95, 223, 154, 0.3); }
-  .mode.claude { border-color: rgba(195, 176, 255, 0.32); }
-  .mode-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }
-  .mode-head h3 { margin: 0; font-size: 1.15rem; }
-  .tag { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0.15em 0.6em; border-radius: 999px; letter-spacing: 0.02em; }
-  .tag.local { background: var(--green-soft); color: var(--green); border: 1px solid #2c6b3f; }
-  .tag.claude { background: var(--purple-soft); color: var(--purple); border: 1px solid #5743a0; }
-  .mode p { margin: 0 0 0.8rem; font-size: 0.92rem; line-height: 1.55; }
-  .mode ul { margin: 0; font-size: 0.88rem; }
-  .mode li { margin-bottom: 0.35rem; }
-  .switch-note { margin-top: 1.1rem; font-size: 0.88rem; color: var(--text-faint); }
+  .provider .name { font-weight: 600; color: var(--text); font-size: 0.96rem; }
+  .provider .kind { font-size: 0.78rem; color: var(--text-faint); }
+  .provider.byo { border-color: rgba(91, 141, 239, 0.4); }
+  .lock-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.3rem; }
+  .lock-row .chip {
+    font-size: 0.82rem; color: var(--green); background: var(--green-soft);
+    border: 1px solid #2c6b3f; border-radius: 999px; padding: 0.25rem 0.7rem;
+  }
 
   /* ===== Feature grid ===== */
   .features {
@@ -200,16 +200,16 @@
   .feature p { margin: 0; font-size: 0.88rem; line-height: 1.55; color: var(--text-dim); }
   .spotlight { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
   .feature-hl {
-    border-color: rgba(124, 156, 255, 0.4);
-    background: linear-gradient(180deg, rgba(124, 156, 255, 0.08), rgba(124, 156, 255, 0)), var(--bg-card);
-    box-shadow: 0 0 0 1px rgba(124, 156, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.28);
+    border-color: rgba(91, 141, 239, 0.4);
+    background: linear-gradient(180deg, rgba(91, 141, 239, 0.08), rgba(91, 141, 239, 0)), var(--bg-card);
+    box-shadow: 0 0 0 1px rgba(91, 141, 239, 0.12), 0 8px 24px rgba(0, 0, 0, 0.28);
   }
   .feature-hl h4 { font-size: 1.05rem; }
   .feature-hl p { color: var(--text); }
   .feature-when {
     display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.05em; color: var(--accent); background: var(--accent-soft);
-    border: 1px solid rgba(124, 156, 255, 0.25); border-radius: 999px; padding: 0.12em 0.6em; margin-bottom: 0.55rem;
+    border: 1px solid rgba(91, 141, 239, 0.25); border-radius: 999px; padding: 0.12em 0.6em; margin-bottom: 0.55rem;
   }
 
   /* ===== Spec strip ===== */
@@ -244,12 +244,12 @@
   /* ===== How-it-works pipeline ===== */
   .pipeline { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; margin: 2rem auto 0.5rem; max-width: 560px; }
   .stage { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 0.95rem 1.1rem; width: 100%; transition: border-color 0.3s ease, box-shadow 0.3s ease; }
-  .stage.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(124,156,255,0.25); }
+  .stage.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(91,141,239,0.25); }
   .stage-tag { font-size: 0.7rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.35rem; display: block; }
   .stage-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.15rem; color: var(--text); }
   .stage-sub { font-size: 0.82rem; color: var(--text-dim); margin: 0; }
   .connector { width: 2px; height: 28px; background: var(--border-strong); position: relative; border-radius: 1px; overflow: hidden; }
-  .connector::after { content: ''; position: absolute; left: -2px; width: 6px; height: 14px; background: var(--accent); border-radius: 3px; box-shadow: 0 0 10px rgba(124,156,255,0.7); animation: pulse-down 2.4s ease-in-out infinite; }
+  .connector::after { content: ''; position: absolute; left: -2px; width: 6px; height: 14px; background: var(--accent); border-radius: 3px; box-shadow: 0 0 10px rgba(91,141,239,0.7); animation: pulse-down 2.4s ease-in-out infinite; }
   @keyframes pulse-down { 0%{top:-18px;opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{top:32px;opacity:0;} }
   .stage-capture { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
   .source { display: flex; align-items: center; gap: 0.65rem; }
@@ -280,7 +280,7 @@
   kbd { background: var(--bg-elev); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; padding: 0.22em 0.55em; font-family: 'JetBrains Mono', monospace; font-size: 0.82em; color: var(--text); display: inline-block; }
   .stage-trigger kbd { animation: key-pulse 3.6s ease-in-out infinite; }
   .stage-trigger kbd:nth-child(3) { animation-delay: 0.08s; }
-  @keyframes key-pulse { 0%,78%,100%{background:var(--bg-elev);border-color:var(--border-strong);transform:translateY(0);box-shadow:0 0 0 0 rgba(124,156,255,0);} 85%,90%{background:var(--accent-soft);border-color:var(--accent);transform:translateY(2px);box-shadow:0 0 16px 2px rgba(124,156,255,0.45);} }
+  @keyframes key-pulse { 0%,78%,100%{background:var(--bg-elev);border-color:var(--border-strong);transform:translateY(0);box-shadow:0 0 0 0 rgba(91,141,239,0);} 85%,90%{background:var(--accent-soft);border-color:var(--accent);transform:translateY(2px);box-shadow:0 0 16px 2px rgba(91,141,239,0.45);} }
   .stage-response { min-height: 72px; }
   .response-text { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--text); min-height: 38px; word-break: break-word; }
   .caret { display: inline-block; width: 6px; height: 0.95em; background: var(--accent); vertical-align: text-bottom; margin-left: 1px; animation: blink 1s steps(2) infinite; }
@@ -305,11 +305,17 @@
 
 <header class="hero">
   <div class="container">
-    <span class="badge">Self-contained build · v0.1.9-dist</span>
-    <h1>Pluely <span class="accent">— Customized</span></h1>
+    <img class="brand-logo" src="memora-logo.svg" alt="Memora" />
+    <span class="badge">Private Meeting Memory · Windows</span>
+    <h1>Never lose the <span class="accent">context</span> of a meeting again.</h1>
     <p class="tagline">
-      A Windows AI meeting assistant that listens to your calls, transcribes both sides live, reads your screenshots, and hands you a ready-to-speak answer the moment you press a key. Speech-to-text is bundled in — <strong>no setup, no API key.</strong>
+      Memora is a privacy-first desktop meeting assistant. It <strong>records meetings, captures screen and audio, generates transcripts and summaries</strong>, and lets you query your meeting history with <strong>any AI model you choose</strong> — all on your own machine.
     </p>
+    <div class="alt-taglines">
+      <span>Record. Remember. Recall.</span>
+      <span>Your meetings. Your memory.</span>
+      <span>Meeting memory powered by any AI.</span>
+    </div>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/Gansager/pluely-customized/releases/download/v0.1.9-dist/Pluely_0.1.9_x64-setup.exe">
         ⬇&nbsp; Download for Windows
@@ -317,9 +323,9 @@
       <a class="btn btn-ghost" href="https://github.com/Gansager/pluely-customized">View on GitHub →</a>
     </div>
     <div class="meta-row">
-      <span class="pill"><span class="dot"></span> v0.1.9 · ~202&nbsp;MB · installer (.exe)</span>
       <span class="pill"><span class="dot"></span> Windows 10 / 11 (64-bit)</span>
-      <span class="pill"><span class="dot orange"></span> Personal fork · not affiliated with Pluely.com</span>
+      <span class="pill"><span class="dot blue"></span> Privacy-first · local-first</span>
+      <span class="pill"><span class="dot blue"></span> Bring your own AI model</span>
     </div>
     <div class="smartscreen">
       <strong>Unsigned build:</strong> Windows SmartScreen will warn on first run — click <em>“More info” → “Run anyway”</em>.
@@ -327,38 +333,24 @@
   </div>
 </header>
 
-<!-- ===== Install modes ===== -->
+<!-- ===== Bring your own model ===== -->
 <section>
   <div class="container">
-    <h2>Two ways to run it</h2>
-    <p class="section-lead">Pick a mode during installation — switchable later in <strong>Settings</strong>. Either way, speech-to-text is bundled and the app starts and stops its helper servers for you.</p>
-    <div class="modes">
-      <div class="mode local">
-        <div class="mode-head">
-          <h3>Local</h3>
-          <span class="tag local">no account</span>
-        </div>
-        <p>Fully offline. Bundled Whisper speech-to-text plus the <code>minicpm-v</code> vision model (pulled at install, ~5.5&nbsp;GB) so screenshots work too.</p>
-        <ul>
-          <li>No API key, no login, no network needed</li>
-          <li>Everything runs on your machine</li>
-          <li>Great for private or air-gapped use</li>
-        </ul>
-      </div>
-      <div class="mode claude">
-        <div class="mode-head">
-          <h3>Claude</h3>
-          <span class="tag claude">smarter</span>
-        </div>
-        <p>Routes answers through your local <code>claude</code> CLI for sharper, more capable replies and native screenshot vision.</p>
-        <ul>
-          <li>One-time <code>claude login</code> + a Claude subscription</li>
-          <li>No Anthropic API credits burned</li>
-          <li>Speech-to-text still bundled and local</li>
-        </ul>
-      </div>
+    <h2>Bring your own AI model</h2>
+    <p class="section-lead">Memora doesn't lock you into one provider or a subscription. Point it at whichever model you trust — cloud or fully local — and switch anytime in <strong>Settings</strong>. No vendor lock-in.</p>
+    <div class="providers">
+      <div class="provider"><span class="name">Claude</span><span class="kind">Anthropic API or CLI</span></div>
+      <div class="provider"><span class="name">OpenAI</span><span class="kind">GPT models</span></div>
+      <div class="provider"><span class="name">Gemini</span><span class="kind">Google</span></div>
+      <div class="provider"><span class="name">Ollama</span><span class="kind">local models</span></div>
+      <div class="provider"><span class="name">Local models</span><span class="kind">offline, on-device</span></div>
+      <div class="provider byo"><span class="name">Custom API</span><span class="kind">any OpenAI-compatible endpoint</span></div>
     </div>
-    <p class="switch-note">→ Switch modes anytime in <strong>Settings → Dashboard</strong>. The bundled servers are managed automatically — nothing to start by hand.</p>
+    <div class="lock-row">
+      <span class="chip">🔒 Data stays on your machine</span>
+      <span class="chip">🏠 Runs fully offline</span>
+      <span class="chip">🚫 No account required</span>
+    </div>
   </div>
 </section>
 
@@ -366,7 +358,7 @@
 <section>
   <div class="container">
     <h2>How it works</h2>
-    <p class="section-lead">A live call flows top-to-bottom through bundled local services. The AI never fires on its own — you press <kbd>Ctrl</kbd>+<kbd>Space</kbd> exactly when you want a reply.</p>
+    <p class="section-lead">A live call flows top-to-bottom through local services. The AI never fires on its own — you press <kbd>Ctrl</kbd>+<kbd>Space</kbd> exactly when you want it.</p>
 
     <div class="pipeline">
       <!-- 1. Capture -->
@@ -395,10 +387,10 @@
       <div class="stage stage-service" id="stage-stt">
         <div>
           <span class="stage-tag">Speech-to-text</span>
-          <div class="stage-title">Bundled Whisper</div>
-          <p class="stage-sub">runs locally, no key, no network — auto-started with the app</p>
+          <div class="stage-title">Local or your provider</div>
+          <p class="stage-sub">transcribed on-device with Whisper, or your configured STT — auto-started with the app</p>
         </div>
-        <span class="stage-port">local · bundled</span>
+        <span class="stage-port">local</span>
       </div>
 
       <div class="connector"></div>
@@ -426,8 +418,8 @@
       <div class="stage stage-service" id="stage-ai">
         <div>
           <span class="stage-tag">AI brain</span>
-          <div class="stage-title">Local model or Claude</div>
-          <p class="stage-sub">switchable per install — local <code>minicpm-v</code> or your <code>claude</code> login</p>
+          <div class="stage-title">Any model you choose</div>
+          <p class="stage-sub">Claude, OpenAI, Gemini, Ollama, local or a custom endpoint</p>
         </div>
         <span class="stage-port ai">your choice</span>
       </div>
@@ -436,7 +428,7 @@
 
       <!-- 6. Response -->
       <div class="stage stage-response" id="stage-response">
-        <span class="stage-tag">Ready-to-speak reply</span>
+        <span class="stage-tag">Answer · saved to memory</span>
         <div class="response-text" id="responseText"><span class="caret"></span></div>
       </div>
     </div>
@@ -446,23 +438,23 @@
 <!-- ===== Capture any meeting ===== -->
 <section>
   <div class="container">
-    <h2>Capture any meeting — your way</h2>
-    <p class="section-lead">Three one-click tools that cover every kind of call and hand you the recap. Pick the recorder that fits, then let the summarizer write it up.</p>
+    <h2>Record any meeting — your way</h2>
+    <p class="section-lead">Three one-click tools that cover every kind of call and hand you the recap. Pick the recorder that fits, then let Memora write it up.</p>
     <div class="features spotlight">
       <div class="feature feature-hl">
-        <span class="feature-when">No screen demo</span>
+        <span class="feature-when">Audio only</span>
         <h4>🎙️ Dictaphone</h4>
-        <p>Just a call, nothing to show? One click records <strong>mic + system audio</strong> into a stereo WAV — lightweight, independent of the live pipeline. Middle-click opens the folder.</p>
+        <p>Just a call, nothing to show? One click records <strong>mic + system audio</strong> into a stereo WAV — lightweight, independent of the live pipeline. A summary is written the moment you stop. Middle-click opens the folder.</p>
       </div>
       <div class="feature feature-hl">
-        <span class="feature-when">Screen demo</span>
+        <span class="feature-when">Screen + audio</span>
         <h4>🖥️ Screen recording</h4>
-        <p>Someone's sharing, or you need to capture a demo? Record the monitor of your choice with <strong>system audio + mic</strong> into a seekable <code>.webm</code> that scrubs cleanly. When you stop, the audio is transcribed and a <strong>same-named <code>.md</code> recap</strong> is written next to the video — automatically.</p>
+        <p>Someone's sharing, or you need to capture a demo? Record the monitor of your choice with <strong>system audio + mic</strong> into a seekable <code>.webm</code>. On stop, the audio is transcribed and a <strong>same-named <code>.md</code> recap</strong> is written next to the video — automatically.</p>
       </div>
       <div class="feature feature-hl">
         <span class="feature-when">After the call</span>
         <h4>📝 Meeting summary</h4>
-        <p>One click turns the session transcript into a structured Markdown recap — <strong>what was discussed, decisions, action items, blockers</strong> — saved and copied to your clipboard.</p>
+        <p>Memora turns the session into a structured Markdown recap — <strong>what was discussed, decisions, action items, blockers</strong> — saved next to the recording and copied to your clipboard.</p>
       </div>
     </div>
   </div>
@@ -471,44 +463,40 @@
 <!-- ===== Features ===== -->
 <section>
   <div class="container">
-    <h2>Everything it does</h2>
-    <p class="section-lead">Built for live customer and engineering calls. All premium features are unlocked in this fork.</p>
+    <h2>Everything Memora does</h2>
+    <p class="section-lead">A complete meeting-memory toolkit — capture, understand, and recall, all locally.</p>
     <div class="features">
       <div class="feature">
         <h4>🎧 One-button listening</h4>
-        <p>The headphones icon starts system-audio capture and mic VAD in one click. <code>[ME]</code> / <code>[THEM]</code> tags are added automatically as the conversation flows.</p>
+        <p>The headphones icon starts system-audio capture and mic VAD in one click. <code>[ME]</code> / <code>[THEM]</code> speaker tags are added automatically as the conversation flows.</p>
       </div>
       <div class="feature">
-        <h4>⌨️ Manual AI on Ctrl+Space</h4>
-        <p>Ask the AI about the latest transcript only when you want to. Nothing auto-fires, so you stay in control of what's sent.</p>
+        <h4>⌨️ Ask on Ctrl+Space</h4>
+        <p>Query the latest transcript with your chosen model only when you want to. Nothing auto-fires, so you stay in control of what's sent.</p>
+      </div>
+      <div class="feature">
+        <h4>🔎 Search your meetings</h4>
+        <p>Every conversation is stored locally and searchable. Come back days later and ask your model what was decided — your meeting memory is always there.</p>
       </div>
       <div class="feature">
         <h4>🖱️ Right-click message actions</h4>
-        <p>On any message in the conversation: <strong>Explain · Translate · Answer</strong>. Each runs a focused prompt, independent of the meeting-coach system prompt.</p>
+        <p>On any message in the conversation: <strong>Explain · Translate · Answer</strong>. Each runs a focused prompt, independent of the system prompt.</p>
       </div>
       <div class="feature">
         <h4>📸 Screenshots with vision</h4>
-        <p>Capture any screen and the image is read by the AI — the local <code>minicpm-v</code> model, or Claude's native vision. The Screenshot button is always enabled.</p>
+        <p>Capture any screen and have it read by a vision-capable model — local or cloud — without leaving the call.</p>
       </div>
       <div class="feature">
-        <h4>🖥️ Multi-monitor selection fix</h4>
-        <p>Screenshot selection now works correctly across monitors with mixed DPI — the captured snapshot is drawn as the overlay, so no more white screens on a second display.</p>
-      </div>
-      <div class="feature">
-        <h4>🔓 All features unlocked</h4>
-        <p>No license walls, no premium banners, no nag popovers. Everything works out of the box.</p>
+        <h4>🛡️ Hide from screen sharing</h4>
+        <p>Memora is invisible to screen capture by default. Flip one Settings toggle to make it visible when you <em>want</em> it in a recording.</p>
       </div>
       <div class="feature">
         <h4>🧹 Delete all conversations</h4>
-        <p>One-click wipe in the Chats tab for fast resets between meetings — skips the per-conversation confirmation flow.</p>
+        <p>One-click wipe in the Chats tab for fast resets between meetings.</p>
       </div>
       <div class="feature">
-        <h4>♻️ Self-healing capture</h4>
-        <p>Stale “Capture already running” errors recover automatically after ~250&nbsp;ms instead of blocking you mid-call.</p>
-      </div>
-      <div class="feature">
-        <h4>📦 Self-contained</h4>
-        <p>Helper servers and speech-to-text ship inside the installer and start/stop with the app. The auto-updater is removed so the fork's patches stick.</p>
+        <h4>♻️ Resilient & self-healing</h4>
+        <p>Transcription auto-retries on transient stalls, and stale capture errors recover on their own instead of blocking you mid-call.</p>
       </div>
     </div>
   </div>
@@ -520,10 +508,10 @@
     <h2>At a glance</h2>
     <div class="specs">
       <div class="spec"><div class="k">Platform</div><div class="v">Windows 10 / 11<small>64-bit only</small></div></div>
-      <div class="spec"><div class="k">Download</div><div class="v">~202 MB<small>.exe installer</small></div></div>
-      <div class="spec"><div class="k">Disk (Local mode)</div><div class="v">~5.5 GB<small>vision model pulled at install</small></div></div>
-      <div class="spec"><div class="k">Speech-to-text</div><div class="v">Bundled<small>local Whisper, no key</small></div></div>
-      <div class="spec"><div class="k">AI backend</div><div class="v">Local or Claude<small>switchable in Settings</small></div></div>
+      <div class="spec"><div class="k">Architecture</div><div class="v">Local-first<small>your data stays on-device</small></div></div>
+      <div class="spec"><div class="k">AI models</div><div class="v">Bring your own<small>Claude · OpenAI · Gemini · Ollama · local · custom</small></div></div>
+      <div class="spec"><div class="k">Speech-to-text</div><div class="v">Local or yours<small>on-device Whisper, no key</small></div></div>
+      <div class="spec"><div class="k">Recording</div><div class="v">Audio + screen<small>auto summary on stop</small></div></div>
       <div class="spec"><div class="k">License</div><div class="v">GPL-3.0<small>open source</small></div></div>
     </div>
   </div>
@@ -539,7 +527,7 @@
       </thead>
       <tbody>
         <tr><td>Ask the AI about the latest transcript</td><td><code>Ctrl + Space</code></td></tr>
-        <tr><td>Toggle conversation mode in the System Audio popover</td><td><code>Ctrl + K</code></td></tr>
+        <tr><td>Toggle conversation mode in the popover</td><td><code>Ctrl + K</code></td></tr>
         <tr><td>Toggle window visibility</td><td>set per machine in <em>Settings → Shortcuts</em></td></tr>
       </tbody>
     </table>
@@ -552,28 +540,28 @@
     <h2>FAQ &amp; troubleshooting</h2>
     <div class="faq">
       <details>
+        <summary>Where does my meeting data go?</summary>
+        <p>Nowhere you don't choose. Recordings, transcripts, and chat history live in local SQLite and on-disk files on your machine. The only thing that leaves your computer is whatever you send to the AI provider <em>you</em> configure — and with a local model (Ollama / Whisper), nothing leaves at all.</p>
+      </details>
+      <details>
+        <summary>Which AI models can I use?</summary>
+        <p>Claude, OpenAI, Gemini, Ollama, local models, or any custom OpenAI-compatible endpoint. Pick one in <strong>Settings → Dashboard</strong> and switch whenever you like — no vendor lock-in.</p>
+      </details>
+      <details>
         <summary>Do I need an API key or account?</summary>
-        <p>Not for <strong>Local</strong> mode — speech-to-text and the vision model are bundled and run entirely on your machine. <strong>Claude</strong> mode needs a one-time <code>claude login</code> and a Claude subscription, but never spends Anthropic API credits.</p>
+        <p>Not if you run fully local — on-device speech-to-text plus a local model need no key and no login. Cloud providers (Claude, OpenAI, Gemini) need their own key or login, but Memora never requires an account of its own.</p>
       </details>
       <details>
         <summary>Windows says the app is unsafe / SmartScreen blocks it.</summary>
         <p>The build is unsigned, so Windows SmartScreen shows a warning on first run. Click <em>“More info” → “Run anyway”</em>. The source is fully open on GitHub if you'd rather build it yourself.</p>
       </details>
       <details>
-        <summary>Can I switch between Local and Claude later?</summary>
-        <p>Yes — pick a mode during install, then change it anytime in <strong>Settings → Dashboard</strong>. The bundled helper servers are managed automatically.</p>
-      </details>
-      <details>
-        <summary>Pluely doesn't react to the other side's audio.</summary>
+        <summary>Memora doesn't react to the other side's audio.</summary>
         <p>Check that Windows has the correct speaker / system-audio device selected and that audio is actually playing. WASAPI loopback returns silence when nothing is playing.</p>
       </details>
       <details>
-        <summary>The audio-recording hotkey doesn't work.</summary>
-        <p>Another app probably holds that hotkey. Change the <em>Audio recording</em> shortcut in <strong>Settings → Shortcuts</strong>.</p>
-      </details>
-      <details>
-        <summary>Is this the official Pluely?</summary>
-        <p>No. This is a personal Windows-only fork of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> with workflow patches for live calls. It is not affiliated with Pluely.com.</p>
+        <summary>Is Memora open source?</summary>
+        <p>Yes. Memora is built on top of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> and is licensed GPL-3.0. The full source is on GitHub.</p>
       </details>
     </div>
   </div>
@@ -581,7 +569,7 @@
 
 <footer>
   <div class="container">
-    Built on top of <a href="https://github.com/iamsrikanthnani/pluely">iamsrikanthnani/pluely</a> · Licensed GPL-3.0 ·
+    Memora · Built on the open-source <a href="https://github.com/iamsrikanthnani/pluely">pluely</a> · Licensed GPL-3.0 ·
     <a href="https://github.com/Gansager/pluely-customized">Source on GitHub</a> ·
     <a href="https://github.com/Gansager/pluely-customized/releases">All releases</a>
   </div>

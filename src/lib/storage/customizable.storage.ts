@@ -16,7 +16,7 @@ export interface CustomizableState {
     type: CursorType;
   };
   // When enabled, the window is hidden from screen capture/recording (default).
-  // Disable to make Pluely visible in shares.
+  // Disable to make Memora visible in shares.
   contentProtection: {
     isEnabled: boolean;
   };

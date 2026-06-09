@@ -1,7 +1,7 @@
 @echo off
 setlocal
 set "PROXY_DIR=%USERPROFILE%\pluely-proxy"
-title Pluely — End meeting (summary)
+title Memora — End meeting (summary)
 cd /d "%PROXY_DIR%"
 "%PROXY_DIR%\whisper-venv\Scripts\python.exe" summarize-meeting.py --open
 echo.

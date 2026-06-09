@@ -574,8 +574,8 @@ pub fn set_always_on_top<R: Runtime>(app: AppHandle<R>, enabled: bool) -> Result
 }
 
 /// Tauri command to set content protection (hides the window from screen
-/// capture / recording). Windows default to `enabled = true` (Pluely is
-/// invisible in shares). Set to `false` to make Pluely visible when sharing —
+/// capture / recording). Windows default to `enabled = true` (Memora is
+/// invisible in shares). Set to `false` to make Memora visible when sharing —
 /// e.g. when screen-recording the assistant itself. Applied to BOTH the overlay
 /// ("main") and the dashboard, since both are content-protected by default;
 /// a not-yet-created window is silently skipped.

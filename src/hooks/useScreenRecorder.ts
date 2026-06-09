@@ -72,7 +72,7 @@ export function useScreenRecorder() {
       // 1. Screen + system audio. Native picker handles the screen choice.
       //
       // WebView2 renders the getDisplayMedia picker CLIPPED to the host
-      // window's bounds, and Pluely's window is a 54px-tall bar — so the
+      // window's bounds, and Memora's window is a 54px-tall bar — so the
       // picker tiles would be invisible. Grow the window to fill the monitor
       // for the duration of the picker, suppress the auto-resize, then restore.
       (globalThis as any).__pluelyScreenPicking = true;

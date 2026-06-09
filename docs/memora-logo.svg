@@ -1,0 +1,17 @@
+<svg width="560" height="140" viewBox="0 0 560 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="t" x1="10" y1="10" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#262B38"/><stop offset="1" stop-color="#14161D"/>
+    </linearGradient>
+    <linearGradient id="n" x1="56" y1="30" x2="76" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FA8F6"/><stop offset="1" stop-color="#4C7DF0"/>
+    </linearGradient>
+  </defs>
+  <!-- mark -->
+  <rect x="10" y="10" width="120" height="120" rx="30" fill="url(#t)"/>
+  <path d="M40 96 V47 L70 79 L100 47 V96" stroke="#F4F6FB" stroke-width="13.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="70" cy="40" r="8.6" fill="url(#n)"/>
+  <!-- wordmark -->
+  <text x="156" y="70" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="52" font-weight="650" letter-spacing="-1" fill="#F4F6FB">Memora</text>
+  <text x="158" y="100" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="17" font-weight="500" letter-spacing="3.5" fill="#8C93A3">PRIVATE MEETING MEMORY</text>
+</svg>

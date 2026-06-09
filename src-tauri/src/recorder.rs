@@ -592,7 +592,7 @@ pub async fn finish_screen_recording(app: AppHandle) -> Result<String, String> {
 }
 
 /// Launch ~/pluely-proxy/summarize-video.cmd <recording> in its own console
-/// window, detached from Pluely. It transcribes the recording (Google STT) and
+/// window, detached from Memora. It transcribes the recording (Google STT) and
 /// writes "<stem>.md" beside it. Used for BOTH the screen recording (.webm) and
 /// the dictaphone (.wav) — the script is format-agnostic (ffmpeg extracts the
 /// audio either way). Errors are logged, never propagated.

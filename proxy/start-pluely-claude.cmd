@@ -14,7 +14,7 @@ node "%PROXY_DIR%\level-tools\select-provider.mjs" claude
 
 netstat -ano | findstr /R /C:":%PROXY_PORT% .*LISTENING" >nul 2>&1
 if errorlevel 1 (
-    start "Pluely Proxy (Claude Code)" /D "%PROXY_DIR%" cmd /k "python proxy.py --project ""%PROXY_DIR%"" --port %PROXY_PORT%"
+    start "Memora Proxy (Claude Code)" /D "%PROXY_DIR%" cmd /k "python proxy.py --project ""%PROXY_DIR%"" --port %PROXY_PORT%"
 )
 
 netstat -ano | findstr /R /C:":%WHISPER_PORT% .*LISTENING" >nul 2>&1

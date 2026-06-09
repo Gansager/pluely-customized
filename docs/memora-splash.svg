@@ -1,0 +1,27 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="750" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#171A22"/><stop offset="1" stop-color="#0F1117"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="520" y1="200" x2="680" y2="360" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#262B38"/><stop offset="1" stop-color="#14161D"/>
+    </linearGradient>
+    <linearGradient id="node" x1="585" y1="232" x2="615" y2="262" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7FA8F6"/><stop offset="1" stop-color="#4C7DF0"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5B8DEF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#5B8DEF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  <circle cx="600" cy="300" r="320" fill="url(#aura)"/>
+  <!-- mark -->
+  <rect x="520" y="200" width="160" height="160" rx="40" fill="url(#tile)"/>
+  <path d="M560 330 V268 L600 310 L640 268 V330" stroke="#F4F6FB" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="600" cy="248" r="11.5" fill="url(#node)"/>
+  <!-- wordmark -->
+  <text x="600" y="470" text-anchor="middle" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="76" font-weight="650" letter-spacing="-2" fill="#F4F6FB">Memora</text>
+  <text x="600" y="520" text-anchor="middle" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="22" font-weight="500" letter-spacing="6" fill="#9098A8">PRIVATE MEETING MEMORY</text>
+  <text x="600" y="690" text-anchor="middle" font-family="'Inter','Segoe UI',system-ui,-apple-system,sans-serif" font-size="19" font-weight="400" fill="#5B6373">Record. Remember. Recall.</text>
+</svg>

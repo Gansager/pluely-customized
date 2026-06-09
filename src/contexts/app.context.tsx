@@ -150,7 +150,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     safeLocalStorage.setItem(STORAGE_KEYS.SUPPORTS_IMAGES, "true");
   };
 
-  // Pluely API State
+  // Memora API State
   const [pluelyApiEnabled, setPluelyApiEnabledState] = useState<boolean>(
     safeLocalStorage.getItem(STORAGE_KEYS.PLUELY_API_ENABLED) === "true"
   );
@@ -276,7 +276,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    // Load Pluely API enabled state
+    // Load Memora API enabled state
     const savedPluelyApiEnabled = safeLocalStorage.getItem(
       STORAGE_KEYS.PLUELY_API_ENABLED
     );
@@ -458,7 +458,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const checkImageSupport = async () => {
       if (pluelyApiEnabled) {
-        // For Pluely API, check the selected model's modality
+        // For Memora API, check the selected model's modality
         try {
           const storage = await invoke<{
             selected_pluely_model?: string;

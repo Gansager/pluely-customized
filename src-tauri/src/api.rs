@@ -128,7 +128,7 @@ pub struct SystemPromptResponse {
     system_prompt: String,
 }
 
-// Pluely Prompts API
+// Memora Prompts API
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PluelyPrompt {
     title: String,
@@ -958,7 +958,7 @@ pub async fn fetch_models(app: AppHandle) -> Result<Vec<Model>, String> {
     Ok(models_response.models)
 }
 
-// Fetch Pluely Prompts API
+// Fetch Memora Prompts API
 #[tauri::command]
 pub async fn fetch_prompts() -> Result<PluelyPromptsResponse, String> {
     let app_endpoint = get_app_endpoint()?;

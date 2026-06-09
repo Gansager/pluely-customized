@@ -84,13 +84,13 @@ export const PluelyPrompts = () => {
     }
   }, []);
 
-  // Watch for changes in user's selected prompt and clear Pluely selection if needed
+  // Watch for changes in user's selected prompt and clear Memora selection if needed
   useEffect(() => {
     const checkUserPromptSelection = () => {
       const userSelectedPromptId = safeLocalStorage.getItem(
         STORAGE_KEYS.SELECTED_SYSTEM_PROMPT_ID
       );
-      // If user has selected one of their own prompts, clear Pluely prompt selection
+      // If user has selected one of their own prompts, clear Memora prompt selection
       if (userSelectedPromptId) {
         setSelectedPluelyPrompt(null);
       }
@@ -120,9 +120,9 @@ export const PluelyPrompts = () => {
         setLastUpdated(response.last_updated);
       }
     } catch (err) {
-      console.error("Failed to fetch Pluely prompts:", err);
+      console.error("Failed to fetch Memora prompts:", err);
       setError(
-        typeof err === "string" ? err : "Failed to fetch Pluely prompts"
+        typeof err === "string" ? err : "Failed to fetch Memora prompts"
       );
     } finally {
       setIsLoading(false);
@@ -156,7 +156,7 @@ export const PluelyPrompts = () => {
       // Save the system prompt to local storage
       safeLocalStorage.setItem(STORAGE_KEYS.SYSTEM_PROMPT, prompt.prompt);
 
-      // Save the selected Pluely prompt to local storage for persistence
+      // Save the selected Memora prompt to local storage for persistence
       safeLocalStorage.setItem(
         SELECTED_PLUELY_PROMPT_STORAGE_KEY,
         JSON.stringify(prompt)
@@ -185,7 +185,7 @@ export const PluelyPrompts = () => {
         });
       }
     } catch (error) {
-      console.error("Failed to select Pluely prompt:", error);
+      console.error("Failed to select Memora prompt:", error);
     }
   };
 
@@ -204,14 +204,14 @@ export const PluelyPrompts = () => {
     return (
       <div className="space-y-4 mt-6">
         <Header
-          title="Pluely Default Prompts"
+          title="Memora Default Prompts"
           description="Pre-configured prompts with optimal model selection"
         />
         <Empty
           isLoading={true}
           icon={Sparkles}
           title="Loading prompts..."
-          description="Fetching Pluely default prompts"
+          description="Fetching Memora default prompts"
         />
       </div>
     );
@@ -221,7 +221,7 @@ export const PluelyPrompts = () => {
     return (
       <div className="space-y-4 mt-6">
         <Header
-          title="Pluely Default Prompts"
+          title="Memora Default Prompts"
           description="Pre-configured prompts with optimal model selection"
         />
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-3">
@@ -241,7 +241,7 @@ export const PluelyPrompts = () => {
         <div className="flex items-start gap-3 w-full">
           <div className="flex flex-col gap-1 w-full">
             <Header
-              title="Pluely Default Prompts"
+              title="Memora Default Prompts"
               description="Pre-configured prompts with optimal model pairings. Selecting a prompt will automatically set the recommended AI model for best results."
             />
             {lastUpdated && (

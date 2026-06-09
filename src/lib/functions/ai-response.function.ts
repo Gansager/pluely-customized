@@ -43,7 +43,7 @@ function buildEnhancedSystemPrompt(baseSystemPrompt?: string): string {
   return prompts.join(" ");
 }
 
-// Pluely AI streaming function
+// Memora AI streaming function
 async function* fetchPluelyAIResponse(params: {
   systemPrompt?: string;
   userMessage: string;
@@ -157,7 +157,7 @@ async function* fetchPluelyAIResponse(params: {
     }
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    yield `Pluely API Error: ${errorMessage}`;
+    yield `Memora API Error: ${errorMessage}`;
   }
 }
 
@@ -191,7 +191,7 @@ export async function* fetchAIResponse(params: {
 
     const enhancedSystemPrompt = buildEnhancedSystemPrompt(systemPrompt);
 
-    // Check if we should use Pluely API instead
+    // Check if we should use Memora API instead
     const usePluelyAPI = await shouldUsePluelyAPI();
     if (usePluelyAPI) {
       yield* fetchPluelyAIResponse({

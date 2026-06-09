@@ -104,7 +104,7 @@ const App = () => {
           <Button
             size={"icon"}
             className="cursor-pointer"
-            title="Quit Pluely"
+            title="Quit Memora"
             onClick={quitApp}
           >
             <LogOutIcon className="h-4 w-4" />

@@ -1,63 +1,84 @@
-# Pluely — Customized (Gansager fork)
+<div align="center">
 
-A personal Windows-only fork of [iamsrikanthnani/pluely](https://github.com/iamsrikanthnani/pluely) with workflow patches for live customer / engineering calls. The upstream README is preserved at [`README-upstream.md`](./README-upstream.md).
+<img src="./docs/memora-logo.svg" alt="Memora" width="380" />
 
-> **Platform support:** Windows 10 / 11 only. The recorder, the system audio capture pipeline, the proxy launcher scripts, and the screenshot tooling are all WASAPI / Windows-specific. macOS and Linux are **not** supported in this fork.
+# Memora — Private Meeting Memory
 
-## What's different from upstream
+**Record meetings, generate summaries with any AI model, and never lose important context again.**
 
-Headline changes shipped on top of stock `v0.1.9`:
+_Record. Remember. Recall._
 
-- **Unified listening button.** The headphones icon starts both system-audio capture and microphone VAD in one click. `[ME]` / `[THEM]` speaker tags get added automatically. AI never auto-fires — press `Ctrl+Space` to ask the model about the latest transcript.
-- **Independent call recorder ("dictaphone").** Stereo WAV of mic + system audio, fully separate from the STT pipeline. Output: `~/Documents/Pluely Recordings/`. Middle-click the recorder icon to open the folder.
-- **Right-click message actions.** On any message in the conversation popover, right-click for **Explain / Translate / Answer** — each runs a focused prompt that ignores the meeting-coach system prompt.
-- **Permissive Ctrl+Space.** Even when a narrow system prompt is configured (e.g. "only help with project X"), the assistant will answer any question. The user's context is passed through but doesn't restrict topic.
-- **Screenshot with custom proxy support.** The bundled `proxy.py` (see `pluely-proxy` setup below) saves attached screenshots to a temp PNG and hints Claude Code's CLI to open it via its Read tool. Works around the Claude Code CLI not accepting stdin images.
-- **Multi-monitor selection mode fixed.** The Tauri overlay used to render opaque (white) on secondary monitors with mixed DPI. The fork now draws the captured snapshot directly as the overlay background — works on every screen.
-- **Master license switch.** All paid-feature gates are unlocked (`Promote` banner, 🔒 Premium Features banner on Responses, GetLicense buttons across pages). `hasActiveLicense` is forced to `true`, `validate_license_api` is never called. `supportsImages` is also clamped to `true` so the Screenshot button is always active.
-- **Manual AI mode by default.** Stock Pluely auto-runs the AI on every transcribed chunk. This fork persists the chunk and waits for `Ctrl+Space`.
-- **Default to conversation view.** The System Audio popover opens in full conversation view, not single-reply mode.
-- **Exit button + always-on drag handle.** Quit and move-window buttons live directly on the panel — no menu hunt, no Get License modal.
-- **English UI** for the context menu and error strings.
-- **Auto-recover from stuck capture state.** Stale "Capture already running" errors now self-heal.
-- **Delete all conversations.** One-click wipe in the Chats tab.
-- **Auto-updater disabled.** Stock updater would overwrite the fork's patches.
+</div>
 
-A full changelog and rationale for each patch lives in commit messages on `master`.
+---
 
-## Install (use the pre-built binary)
+Memora is a **privacy-first, local-first desktop AI meeting assistant**. It records your meetings, captures screen and audio, generates transcripts and summaries, and lets you query your meeting history using **any AI model you choose** — your data stays on your machine.
 
-If you only want to use the fork, not modify it:
+> **Platform support:** Windows 10 / 11. The recorder, system-audio capture, screen capture, and proxy launcher scripts are WASAPI / Windows-specific. macOS and Linux are not supported in this build.
 
-1. Download the latest `pluely_*.msi` or `pluely_*-setup.nsis` from the [Releases](https://github.com/Gansager/pluely/releases) tab (or build locally, see below).
+## Why Memora
+
+- **🔒 Privacy-first** — recordings, transcripts, and chat history live in local SQLite + on-disk files. Nothing is sent anywhere except the AI provider *you* configure.
+- **🏠 Local-first architecture** — runs fully offline with local STT + local models (Ollama / Whisper). No account, no cloud lock-in required.
+- **🧠 Bring your own AI model** — Claude, OpenAI, Gemini, Ollama, local models, or any custom OpenAI-compatible endpoint. No vendor lock-in.
+- **🎙️ Meeting recording** — one-click stereo dictaphone (mic + system audio) independent of the live assistant.
+- **🖥️ Screen recording** — capture the screen with system audio + mic to a seekable `.webm`.
+- **📝 Meeting summaries** — auto-generated Markdown summary the moment a recording stops.
+- **🔎 Search across previous meetings** — every conversation is saved and queryable.
+
+## Supported providers
+
+| | |
+| --- | --- |
+| **Claude** (Anthropic) | **OpenAI** |
+| **Gemini** (Google) | **Ollama** (local) |
+| **Local models** | **Custom OpenAI-compatible APIs** |
+
+## How it works
+
+1. **Listen** — one button starts system-audio capture + microphone. Speech is transcribed locally and tagged `[ME]` / `[THEM]`.
+2. **Ask** — press `Ctrl+Space` to ask your configured model about the latest transcript. The AI never auto-fires.
+3. **Record** — the dictaphone and screen recorder save to `~/Documents/Pluely Recordings/`; a summary `.md` is written next to each recording on stop.
+4. **Recall** — every conversation is stored locally and searchable in the Chats tab.
+
+## Headline features
+
+- **Unified listening button** — system audio + mic VAD in one click, with automatic `[ME]` / `[THEM]` speaker tags.
+- **Independent call recorder ("dictaphone")** — stereo WAV (mic + system), separate from the STT pipeline. Middle-click the recorder icon to open the folder. Auto-summary on stop.
+- **Screen recording with audio** — video + system audio + mic to a seekable `.webm`, with an auto-generated summary on stop.
+- **Right-click message actions** — Explain / Translate / Answer on any message.
+- **Resilient transcription** — STT requests auto-retry on transient network/provider stalls.
+- **"Hide from Screen Sharing" toggle** — Memora is invisible to screen capture by default; flip it off in Settings to show it in shares.
+- **Manual AI mode by default**, full conversation view, exit button + drag handle on the panel, delete-all-chats, auto-recovery from stuck capture.
+
+## Install (pre-built binary)
+
+1. Download the latest `*.msi` or `*-setup.exe` from the [Releases](https://github.com/Gansager/pluely-customized/releases) tab (or build locally, below).
 2. Run the installer.
-3. Configure an AI provider in **Settings → Dashboard**:
-   - Direct Anthropic API (recommended for image / Claude vision support), or
-   - Local Ollama (text-only unless a vision model like `llava` / `llama3.2-vision` is loaded), or
-   - The bundled `pluely-proxy` setup (see below).
-4. Configure an STT provider — local Whisper via the proxy is the fastest path.
+3. Configure an AI provider in **Settings → Dashboard** (Claude / OpenAI / Gemini / Ollama / custom).
+4. Configure an STT provider — local Whisper or the bundled proxy is the fastest path.
 
 ## Build from source
 
 ### Prerequisites
 
 - **Windows 10 or 11.**
-- **Rust** (stable MSVC toolchain). Install via [rustup-init.exe](https://rustup.rs/) — pick "default host triple x86_64-pc-windows-msvc", "default toolchain stable", "profile minimal".
-- **Visual Studio Build Tools 2022** with the *Desktop development with C++* workload and the Windows 11 SDK (22621 or newer). Easiest install: `winget install Microsoft.VisualStudio.2022.BuildTools --override "--passive --add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Component.Windows11SDK.22621"`.
+- **Rust** (stable MSVC) via [rustup-init.exe](https://rustup.rs/) — host triple `x86_64-pc-windows-msvc`, toolchain `stable`, profile `minimal`.
+- **Visual Studio Build Tools 2022** with *Desktop development with C++* + Windows 11 SDK (22621+).
 - **Node.js 20+** and **npm**.
 
-After installing Rust, make sure `~/.cargo/bin` is on your `PATH` (`export PATH="$HOME/.cargo/bin:$PATH"` in bash).
+Ensure `~/.cargo/bin` is on your `PATH`.
 
 ### Build
 
 ```bash
-git clone https://github.com/Gansager/pluely.git pluely-fork
-cd pluely-fork
+git clone https://github.com/Gansager/pluely-customized.git memora
+cd memora
 npm install
 npm run tauri build
 ```
 
-First clean build takes ~10 minutes (~500 Rust crates + vite frontend + bundler). Incremental Rust-only builds finish in ~2 minutes.
+First clean build ~10 min (~500 Rust crates + vite + bundler); incremental Rust-only builds ~2 min.
 
 Outputs:
 
@@ -65,9 +86,9 @@ Outputs:
 - `src-tauri/target/release/bundle/msi/*.msi` — Windows installer
 - `src-tauri/target/release/bundle/nsis/*-setup.exe` — NSIS installer
 
-### Install the freshly-built binary in place
+> **Note on internal names:** the build still produces `pluely.exe` and installs to `%LOCALAPPDATA%\Pluely\`. These internal identifiers are intentionally preserved so existing meeting history and configuration (stored under that path) are not lost on upgrade. They are never shown in the UI.
 
-If you already have stock Pluely installed and just want to swap the `.exe`:
+### Swap a freshly-built binary in place
 
 ```powershell
 Stop-Process -Name pluely -Force -ErrorAction SilentlyContinue
@@ -75,37 +96,30 @@ Copy-Item "src-tauri\target\release\pluely.exe" "$env:LOCALAPPDATA\Pluely\pluely
 Start-Process "$env:LOCALAPPDATA\Pluely\pluely.exe"
 ```
 
-(The first time, install via the `.msi` / `.nsis` so the `%LOCALAPPDATA%\Pluely\` folder, registry entries, and Start menu shortcut get set up.)
+## Optional: companion proxy stack
 
-## Optional: `pluely-proxy` setup
+A local proxy stack lives under [`proxy/`](./proxy/):
 
-The fork ships with a companion proxy stack under [`proxy/`](./proxy/):
+- **Claude Code CLI proxy** (`proxy.py`, port 8765) — route AI calls through your local `claude` CLI login.
+- **Google Cloud Speech-to-Text server** (`google-stt-server.py`, port 8766) — high-accuracy RU/UK/EN STT, ~1–2 s latency.
+- **Local Whisper fallback** (`whisper-server.py`, port 8766) — offline, no API key.
+- **Meeting / recording summarizers** (`summarize-meeting.py`, `summarize-video.py`) — Markdown summaries via `claude -p`.
+- **One-click launchers** that bring up the whole stack and start Memora.
 
-- **Claude Code CLI proxy** (`proxy.py`, port 8765) — routes Pluely's AI calls through your local `claude` CLI login instead of Anthropic API credits. Adds screenshot attachment support.
-- **Google Cloud Speech-to-Text server** (`google-stt-server.py`, port 8766) — far better RU/UK/EN accuracy than local Whisper, ~1-2 s latency, free for the first 60 min/month per GCP project.
-- **Local Whisper fallback** (`whisper-server.py`, port 8766) — same endpoint, no network, no API key. Use when offline or quota-bound.
-- **Meeting summarizer** (`summarize-meeting.py`) — reads Pluely's SQLite history, isolates the current session, writes a Markdown summary via `claude -p`, copies it to clipboard.
-- **LevelDB setup tools** (`level-tools/*.mjs`) — write Pluely's provider config directly to its Chromium LocalStorage; no Settings-page clicking required.
-- **One-click launchers** that bring up the whole stack and start Pluely.
-
-See [`proxy/README.md`](./proxy/README.md) for install + usage.
+See [`proxy/README.md`](./proxy/README.md).
 
 ## Keyboard shortcuts (defaults)
 
 | Action | Shortcut |
 | --- | --- |
-| Manually trigger AI on the latest transcript | `Ctrl+Space` |
-| Toggle conversation mode in System Audio popover | `Ctrl+K` |
-| Toggle window visibility | (configured per-machine in Settings → Shortcuts) |
+| Ask the AI about the latest transcript | `Ctrl+Space` |
+| Toggle conversation mode in the popover | `Ctrl+K` |
+| Toggle window visibility | (set per-machine in Settings → Shortcuts) |
 
-## Troubleshooting
+## Built on
 
-- **System audio "Capture already running" error.** The fork's auto-recovery should self-heal after ~250 ms. If it doesn't, restart Pluely.
-- **`Ctrl+Shift+A` doesn't work.** Some other app on the system holds that hotkey. Change the *Audio recording* shortcut in Settings → Shortcuts.
-- **Screenshot is blank / Selection mode shows white screens.** Already fixed in this fork — Selection mode now uses the captured snapshot as the overlay background instead of relying on Tauri transparency. If you still see this, you're on an older build.
-- **Pluely doesn't respond to system audio.** Check that Windows has the right speaker / system audio device selected and audio is actually playing. WASAPI loopback returns silence when nothing is playing.
-- **Reverting to stock Pluely.** Copy any official `pluely.exe` v0.1.9 release over `%LOCALAPPDATA%\Pluely\pluely.exe`.
+Memora is built on top of [iamsrikanthnani/pluely](https://github.com/iamsrikanthnani/pluely) (GPL-3.0). The original upstream README is preserved at [`README-upstream.md`](./README-upstream.md). All Memora-specific changes are documented in the commit history on `master`.
 
 ## License
 
-GPL v3 (inherited from upstream — see [LICENSE](./LICENSE)).
+GPL v3 — see [LICENSE](./LICENSE).
