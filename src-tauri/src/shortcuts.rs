@@ -608,12 +608,10 @@ fn handle_toggle_dashboard<R: Runtime>(app: &AppHandle<R>) {
                 }
             }
             Ok(false) => {
-                // Window is hidden, show and focus it
-                if let Err(e) = dashboard_window.show() {
+                // Window is hidden — route through show_dashboard_window so the
+                // WebView2 repaint nudge runs (avoids white-on-show).
+                if let Err(e) = show_dashboard_window(app) {
                     eprintln!("Failed to show dashboard window: {}", e);
-                }
-                if let Err(e) = dashboard_window.set_focus() {
-                    eprintln!("Failed to focus dashboard window: {}", e);
                 }
             }
             Err(e) => {

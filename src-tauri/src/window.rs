@@ -163,6 +163,7 @@ pub fn toggle_dashboard(app: tauri::AppHandle) -> Result<(), String> {
                 dashboard_window
                     .set_focus()
                     .map_err(|e| format!("Failed to focus dashboard window: {}", e))?;
+                nudge_repaint(dashboard_window);
             }
             Err(e) => {
                 return Err(format!("Failed to check dashboard visibility: {}", e));
@@ -257,6 +258,24 @@ fn setup_dashboard_close_handler<R: Runtime>(window: &WebviewWindow<R>) {
 }
 
 /// Shows the dashboard window and brings it to focus
+/// Force a WebView2 repaint shortly after a window is shown.
+///
+/// The dashboard window is pre-created hidden at startup; WebView2 can paint it
+/// white on first show (no GPU surface until it gets a size/paint event),
+/// especially on a cold profile. Nudging the window size by 1px and back —
+/// after a short delay so the show has been processed — triggers a WM_SIZE and
+/// forces the webview to composite its (already-rendered) DOM.
+fn nudge_repaint<R: Runtime>(window: WebviewWindow<R>) {
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(std::time::Duration::from_millis(180)).await;
+        if let Ok(size) = window.inner_size() {
+            let _ = window.set_size(tauri::PhysicalSize::new(size.width + 1, size.height + 1));
+            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+            let _ = window.set_size(size);
+        }
+    });
+}
+
 pub fn show_dashboard_window<R: Runtime>(app: &AppHandle<R>) -> Result<(), String> {
     if let Some(dashboard_window) = app.get_webview_window("dashboard") {
         // Window exists, show and focus it
@@ -266,6 +285,7 @@ pub fn show_dashboard_window<R: Runtime>(app: &AppHandle<R>) -> Result<(), Strin
         dashboard_window
             .set_focus()
             .map_err(|e| format!("Failed to focus dashboard window: {}", e))?;
+        nudge_repaint(dashboard_window);
     } else {
         // Window doesn't exist, create it and then show it
         let window = create_dashboard_window(app)
@@ -276,6 +296,7 @@ pub fn show_dashboard_window<R: Runtime>(app: &AppHandle<R>) -> Result<(), Strin
         window
             .set_focus()
             .map_err(|e| format!("Failed to focus new dashboard window: {}", e))?;
+        nudge_repaint(window);
     }
     Ok(())
 }
