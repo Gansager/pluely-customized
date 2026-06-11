@@ -74,9 +74,11 @@ The STT key in Memora's storage is called `custom-local-whisper` for historical 
 
 | Shortcut on Desktop | What it runs |
 | --- | --- |
-| `Memora (Claude).lnk` | `start-pluely-claude.cmd` — selects the Claude proxy AI provider, starts `proxy.py` (8765) and `google-stt-server.py` (8766) if not already up, launches Memora. |
-| `Memora (Ollama).lnk` | `start-pluely-ollama.cmd` — selects the Ollama AI provider, starts `google-stt-server.py` (8766), launches Memora. (No proxy needed — Memora talks to Ollama directly on 11434.) |
+| `Memora (Claude).lnk` | `memora-claude.vbs` — selects the Claude proxy AI provider, starts `proxy.py` (8765) and `stt-server.py` (8766) **hidden** (no console windows), launches Memora. |
+| `Memora (Ollama).lnk` | `memora-ollama.vbs` — selects the Ollama AI provider, starts `stt-server.py` (8766) hidden, launches Memora. (No proxy needed — Memora talks to Ollama directly on 11434.) |
 | `Закончить митинг.lnk` | `end-meeting.cmd` — runs `summarize-meeting.py --open`. |
+
+Both `.vbs` launchers delegate to `start-memora.ps1`, which also acts as a **watchdog**: it waits for Memora to exit and then shuts down the proxy and STT servers automatically. Server output goes to log files instead of console windows: `proxy-server.log`, `stt-server.log`, and `memora-launcher.log` (launcher/watchdog events). The legacy `start-pluely-*.cmd` files now just delegate to the hidden launcher, so old shortcuts keep working.
 
 To create the shortcuts manually:
 
@@ -84,8 +86,8 @@ To create the shortcuts manually:
 $desktop = [Environment]::GetFolderPath('Desktop')
 $wsh = New-Object -ComObject WScript.Shell
 foreach ($pair in @(
-    @{ name = 'Memora (Claude).lnk';      target = "$env:USERPROFILE\pluely-proxy\start-pluely-claude.cmd" },
-    @{ name = 'Memora (Ollama).lnk';      target = "$env:USERPROFILE\pluely-proxy\start-pluely-ollama.cmd" },
+    @{ name = 'Memora (Claude).lnk';      target = "$env:USERPROFILE\pluely-proxy\memora-claude.vbs" },
+    @{ name = 'Memora (Ollama).lnk';      target = "$env:USERPROFILE\pluely-proxy\memora-ollama.vbs" },
     @{ name = 'Закончить митинг.lnk';     target = "$env:USERPROFILE\pluely-proxy\end-meeting.cmd" }
 )) {
     $sc = $wsh.CreateShortcut((Join-Path $desktop $pair.name))
@@ -138,8 +140,11 @@ The Ollama target model is hard-coded in `level-tools/select-provider.mjs` (defa
 | `summarize-meeting.py` | End-of-meeting Markdown summary generator |
 | `summarize-video.py` | Transcribe a stopped recording → same-named `.md` recap |
 | `summarize-video.cmd` | Launcher Memora invokes on recording stop |
-| `start-pluely-claude.cmd` | Full-stack launcher (Claude provider) |
-| `start-pluely-ollama.cmd` | Full-stack launcher (Ollama provider) |
+| `memora-claude.vbs` | Hidden full-stack launcher (Claude provider) — preferred shortcut target |
+| `memora-ollama.vbs` | Hidden full-stack launcher (Ollama provider) — preferred shortcut target |
+| `start-memora.ps1` | Launcher logic + watchdog: hidden servers, auto-shutdown when Memora exits |
+| `start-pluely-claude.cmd` | Legacy launcher (Claude) — delegates to `memora-claude.vbs` |
+| `start-pluely-ollama.cmd` | Legacy launcher (Ollama) — delegates to `memora-ollama.vbs` |
 | `start-google-stt.cmd` | Standalone STT launcher (Google) |
 | `start-whisper.cmd` | Standalone STT launcher (local Whisper) |
 | `end-meeting.cmd` | Calls `summarize-meeting.py --open` |
