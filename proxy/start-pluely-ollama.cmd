@@ -13,7 +13,7 @@ node "%PROXY_DIR%\level-tools\select-provider.mjs" ollama
 
 netstat -ano | findstr /R /C:":%WHISPER_PORT% .*LISTENING" >nul 2>&1
 if errorlevel 1 (
-    start "" /MIN "%PROXY_DIR%\start-google-stt.cmd"
+    start "" /MIN "%PROXY_DIR%\start-stt.cmd"
 )
 
 start "" "%PLUELY_EXE%"

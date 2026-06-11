@@ -3,8 +3,9 @@
 Companion services for Memora. None of this is required to run Memora — it's an opt-in stack that adds:
 
 - **`proxy.py`** — OpenAI-compatible HTTP server on `127.0.0.1:8765` that forwards chat requests to the Anthropic Claude Code CLI (`claude -p`). Lets you point Memora's AI provider at a local URL and use your Claude login instead of paying per Anthropic API token. Supports streaming and screenshot attachments.
-- **`google-stt-server.py`** — OpenAI-compatible STT server on `127.0.0.1:8766` that calls Google Cloud Speech-to-Text REST. Drop-in replacement for the built-in Whisper option, far better accuracy on non-English audio.
-- **`whisper-server.py`** — Fallback local STT (no network, no API key) using [`faster-whisper`](https://github.com/SYSTRAN/faster-whisper). Same `127.0.0.1:8766` endpoint.
+- **`stt-server.py`** — **the STT server (default, port 8766).** Unified OpenAI-compatible `/v1/audio/transcriptions` with provider selection via env: `STT_PROVIDER=groq|whisper|google` (default `groq` = `whisper-large-v3-turbo`), `STT_FALLBACK` (default `whisper`). Non-blocking, fast fail-over (Groq 429/timeout → local whisper), drops oldest chunks under avalanche, warms the model at startup, exposes `/stats` (p50/p95, drops, queue depth). Same multipart contract — the app needs no change.
+- **`google-stt-server.py`** — legacy standalone Google STT server (kept; prefer `STT_PROVIDER=google` in `stt-server.py`).
+- **`whisper-server.py`** — legacy standalone local-whisper server (kept; `stt-server.py` has whisper built in as the fallback).
 - **`summarize-meeting.py`** — Reads Memora's SQLite chat history, isolates the current meeting (session boundary = >30 min idle gap), runs it through `claude -p` with a structured prompt, writes a Markdown summary to `~/Documents/Pluely Meetings/`, and copies it to the clipboard.
 - **`summarize-video.py`** — Fired automatically when you stop a recording. Extracts the recording's audio with ffmpeg, splits it into ≤55 s chunks, transcribes each via Google STT, then runs `claude -p` to write a same-named `.md` recap next to the `.webm`/`.wav`. Skips sound-check-length clips. (`summarize-video.cmd` is the launcher the binary invokes.)
 - **One-click launchers (`.cmd`)** that bring up the whole stack and start Memora.
@@ -94,9 +95,20 @@ foreach ($pair in @(
 }
 ```
 
-## Switch STT backend (Google ↔ Whisper)
+## Switch STT provider (env, no rebuild)
 
-Both servers listen on port 8766 and expose the same `/v1/audio/transcriptions` endpoint. To switch, edit `start-pluely-claude.cmd` / `start-pluely-ollama.cmd` and change `start-google-stt.cmd` to `start-whisper.cmd` (or vice versa). Restart.
+`stt-server.py` (port 8766) picks the engine from `.env` — just edit and restart:
+
+```ini
+STT_PROVIDER=groq        # groq (default) | whisper | google
+STT_FALLBACK=whisper     # whisper | google | none
+GROQ_API_KEY=...         # required for groq
+STT_LANGUAGE=            # empty = auto-detect (RU/UK/EN)
+# weak laptop, fully local:  STT_PROVIDER=whisper  MODEL_SIZE=small  WHISPER_COMPUTE=int8
+# main PC GPU local:         STT_PROVIDER=whisper  WHISPER_MODEL=large-v3  WHISPER_DEVICE=cuda  WHISPER_COMPUTE=float16
+```
+
+Health/metrics: `GET http://127.0.0.1:8766/health` and `/stats` (provider, p50/p95 latency, dropped chunks, queue depth). The legacy standalone launchers `start-google-stt.cmd` / `start-whisper.cmd` still exist if you want a single fixed backend without the provider layer.
 
 ## Switch AI brain (Claude ↔ Ollama)
 
@@ -119,8 +131,10 @@ The Ollama target model is hard-coded in `level-tools/select-provider.mjs` (defa
 | File | Purpose |
 | --- | --- |
 | `proxy.py` | Claude Code CLI HTTP proxy |
-| `google-stt-server.py` | Google STT REST server |
-| `whisper-server.py` | Local Whisper fallback STT server |
+| `stt-server.py` | **Unified STT server (default)** — Groq + whisper/google, env-selected |
+| `start-stt.cmd` | Standalone launcher for `stt-server.py` (8766) |
+| `google-stt-server.py` | Legacy standalone Google STT server |
+| `whisper-server.py` | Legacy standalone local-whisper server |
 | `summarize-meeting.py` | End-of-meeting Markdown summary generator |
 | `summarize-video.py` | Transcribe a stopped recording → same-named `.md` recap |
 | `summarize-video.cmd` | Launcher Memora invokes on recording stop |
